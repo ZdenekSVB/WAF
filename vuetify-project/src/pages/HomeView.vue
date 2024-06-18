@@ -6,7 +6,7 @@
     <div class="game counter-strike" @mouseover="expandImage" @mouseout="shrinkImage" @click="navigateTo('counter-strike')">
       <img src="@/assets/counter-strike.png" alt="Counter-Strike 2">
     </div>
-    <div class="game tft" @mouseover="expandImage" @mouseout="shrinkImage" @click="navigateTo('tft')">
+    <div class="game tft" @mouseover="expandImage" @mouseout="shrinkImage" @click="navigateTo('TFTSearch')">
       <img src="@/assets/tft.png" alt="Teamfight Tactics">
     </div>
     <div class="game league-of-legends" @mouseover="expandImage" @mouseout="shrinkImage" @click="navigateTo('league-of-legends')">
@@ -43,10 +43,9 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: stretch;
-  width: 110%;
-  height: 110vh;
+  height: 100vh; /* Adjusted height for full viewport */
   padding: 0;
-  margin: -15%;
+  margin: 0 auto; /* Centering main horizontally */
   background-color: #1e1e1e;
   overflow: hidden;
 }

@@ -22,7 +22,10 @@ declare module 'vue-router/auto-routes' {
     '/CSView': RouteRecordInfo<'/CSView', '/CSView', Record<never, never>, Record<never, never>>,
     '/HomeView': RouteRecordInfo<'/HomeView', '/HomeView', Record<never, never>, Record<never, never>>,
     '/LOLView': RouteRecordInfo<'/LOLView', '/LOLView', Record<never, never>, Record<never, never>>,
-    '/TFTView': RouteRecordInfo<'/TFTView', '/TFTView', Record<never, never>, Record<never, never>>,
+    '/TFT/BuffNerfView': RouteRecordInfo<'/TFT/BuffNerfView', '/TFT/BuffNerfView', Record<never, never>, Record<never, never>>,
+    '/TFT/RankingView': RouteRecordInfo<'/TFT/RankingView', '/TFT/RankingView', Record<never, never>, Record<never, never>>,
+    '/TFT/SearchView': RouteRecordInfo<'/TFT/SearchView', '/TFT/SearchView', Record<never, never>, Record<never, never>>,
+    '/TFT/StatsView': RouteRecordInfo<'/TFT/StatsView', '/TFT/StatsView', Record<never, never>, Record<never, never>>,
     '/ValorantView': RouteRecordInfo<'/ValorantView', '/ValorantView', Record<never, never>, Record<never, never>>,
   }
 }

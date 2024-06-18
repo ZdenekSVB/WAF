@@ -1,5 +1,18 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+
 import HomeView from '../pages/HomeView.vue';
+
+//VALORANT
+import Valorant from '../pages/ValorantView.vue';
+//CSGO
+import Csgo from '../pages/CSView.vue';
+//TFT
+import TFTSearchView from '../pages/TFT/SearchView.vue';
+import TFTStatsView from '../pages/TFT/StatsView.vue';
+import TFTBuffNerfView from '../pages/TFT/BuffNerfView.vue';
+import TFTRankingView from '../pages/TFT/RankingView.vue';
+//LOL
+import Lol from '../pages/LOLView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -7,26 +20,28 @@ const routes: Array<RouteRecordRaw> = [
     name: 'home',
     component: HomeView,
   },
-  
+//VALORANT
   {
     path: '/valorant',
     name: 'valorant',
-    component: () => import('../pages/ValorantView.vue'),
+    component: Valorant,
   },
+//CSGO
   {
     path: '/counter-strike',
     name: 'counter-strike',
-    component: () => import('../pages/CSView.vue'),
+    component: Csgo,
   },
-  {
-    path: '/tft',
-    name: 'tft',
-    component: () => import('../pages/TFTView.vue'),
-  },
+//TFT
+  { path: '/tft/search', name: 'TFTSearch', component: TFTSearchView },
+  { path: '/tft/stats', name: 'TFTStats', component: TFTStatsView },
+  { path: '/tft/buffs-nerfs', name: 'TFTBuffNerf', component: TFTBuffNerfView },
+  { path: '/tft/ranking', name: 'TFTRanking', component: TFTRankingView },
+//LOL
   {
     path: '/league-of-legends',
     name: 'league-of-legends',
-    component: () => import('../pages/LOLView.vue'),
+    component: Lol,
   },
 ];
 
