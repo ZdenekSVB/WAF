@@ -6,15 +6,13 @@
     </v-btn>
   </v-app-bar>
 
-    
   <v-navigation-drawer v-model="drawer" app>
-  <v-list>
-    <v-list-item v-for="(item, index) in drawerItems" :key="index" @click="navigateTo(index)">
-      <v-list-item-title>{{ item }}</v-list-item-title>
-    </v-list-item>
-  </v-list>
-</v-navigation-drawer>
-
+    <v-list>
+      <v-list-item v-for="(item, index) in drawerItems" :key="index" @click="navigateTo(index)">
+        <v-list-item-title>{{ item }}</v-list-item-title>
+      </v-list-item>
+    </v-list>
+  </v-navigation-drawer>
 </template>
 
 <script lang="ts">
@@ -27,7 +25,7 @@ export default defineComponent({
     return {
       drawer: false,
       activeItem: 0,
-      menuItems: ['Team Fight Tactics', 'Stats', 'Buffs/Nerfs', 'Ranking'],      
+      menuItems: ['Team Fight Tactics', 'Stats', 'Buffs/Nerfs', 'Ranking'],
       drawerItems: ['Hlavní stránka', 'TFT', 'CSGO', 'LOL', 'Valorant'],
       searchQuery: ''
     };
@@ -54,7 +52,6 @@ export default defineComponent({
   }
 });
 </script>
-
 
 <style scoped>
 .active {

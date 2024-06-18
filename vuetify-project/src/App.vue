@@ -10,7 +10,7 @@ import { RouterLink, RouterView } from 'vue-router'
   </div>
 </template>
 
-//jestli ještě někdo tady bude stylovat všechny obrazovky utrhnu mu ruce
+<!-- jestli ještě někdo tady bude stylovat všechny obrazovky utrhnu mu ruce -->
 <style scoped>
 
 </style>
