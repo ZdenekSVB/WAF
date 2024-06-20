@@ -4,9 +4,7 @@
 
     <v-main>
       <v-container>
-        <!-- Top row -->
         <v-row>
-          <!-- Column 1: Profile pic and graph -->
           <v-col cols="12" md="4">
             <v-card>
               <v-card-title>Profile Picture</v-card-title>
@@ -14,7 +12,6 @@
             </v-card>
           </v-col>
 
-          <!-- Column 2: UserInfo frame and stats table -->
           <v-col cols="12" md="4">
             <v-card>
               <v-card-title>User Info</v-card-title>
@@ -35,7 +32,6 @@
                     </div>
                   </v-col>
                 </v-row>
-                <!-- Use v-for to dynamically generate rows -->
                 <v-row v-for="(row, rowIndex) in statsData" :key="rowIndex">
                   <v-col v-for="(content, colIndex) in row" :key="colIndex" cols="4">
                     <div class="content-cell">
@@ -47,7 +43,6 @@
             </v-card>
           </v-col>
 
-          <!-- Column 3: Search bar with graph placeholder -->
           <v-col cols="12" md="4">
             <v-card>
               <v-card-title>Search</v-card-title>
@@ -73,31 +68,31 @@
           </v-col>
         </v-row>
 
-        <!-- Bottom row: Recent games table -->
         <v-row class="recent-games-table">
-          <v-col cols="12">
-            <v-card>
-              <v-card-title>Recent Games</v-card-title>
-              <v-card-text>
-                <v-row class="header-row">
-                  <v-col v-for="(header, index) in recentGamesHeaders" :key="index" cols="2">
-                    <div class="header-cell">
-                      {{ header }}
-                    </div>
-                  </v-col>
-                </v-row>
-                <!-- Use v-for to dynamically generate rows -->
-                <v-row v-for="(row, rowIndex) in recentGamesData" :key="rowIndex">
-                  <v-col v-for="(content, colIndex) in row" :key="colIndex" cols="2">
-                    <div class="content-cell">
-                      {{ content }}
-                    </div>
-                  </v-col>
-                </v-row>
-              </v-card-text>
-            </v-card>
+  <v-col cols="12">
+    <v-card>
+      <v-card-title>Recent Games</v-card-title>
+      <v-card-text>
+        <v-row class="header-row">
+          <v-col v-for="(header, index) in recentGamesHeaders" :key="index" cols="2">
+            <div class="header-cell">
+              {{ header }}
+            </div>
           </v-col>
         </v-row>
+        <v-row v-for="(row, rowIndex) in recentGamesData" :key="rowIndex">
+          <v-col v-for="(content, colIndex) in row" :key="colIndex" cols="2">
+            <div class="content-cell">
+              {{ content }}
+            </div>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+  </v-col>
+</v-row>
+
+
       </v-container>
     </v-main>
 
@@ -126,51 +121,69 @@ export default defineComponent({
       statsHeaders: ['Synergy', 'Matches', 'Avg Place'],
       statsData: [
         ['Data 1', 'Data 2', 'Data 3'],
-        // Add more rows as needed
       ],
-      recentGamesHeaders: ['Place', 'Stage', 'Synergy', 'Augment', 'Champs', 'Gold/Kills/DMg'],
+      recentGamesHeaders: ['Place', 'Stage', 'Synergy', 'Augment', 'Champs', 'Gold/Kills/DMG'],
       recentGamesData: [
         ['Data 1', 'Data 2', 'Data 3', 'Data 4', 'Data 5', 'Data 6'],
-        // Add more rows as needed
       ]
     };
   },
   methods: {
     async searchForPlayer() {
-      const API_URL = "http://localhost:3002/api/getPUUID";
+  const API_URL = "http://localhost:3002/api/getPUUID";
 
-      if (this.searchQuery.trim() === '') {
-        alert('Please enter a summoner name.');
-        return;
-      }
+  if (this.searchQuery.trim() === '') {
+    alert('Please enter a summoner name.');
+    return;
+  }
 
-      try {
-        const [gameName, tagLine] = this.searchQuery.split('#');
-        if (!gameName || !tagLine) {
-          alert('Please enter the full Riot ID in the format: name#tag');
-          return;
-        }
-
-        const response = await axios.get(`${API_URL}/${gameName}/${tagLine}`);
-        const playerData = response.data;
-
-        if (playerData.puuid) {
-          const tftDataResponse = await axios.get(`http://localhost:3002/api/getTFTData/${playerData.puuid}`);
-          const tftData = tftDataResponse.data;
-
-          this.userInfo = {
-            name: gameName ,
-            summonerLevel: tftData.summonerLevel
-          };
-          this.profileIconUrl = `http://ddragon.leagueoflegends.com/cdn/11.9.1/img/profileicon/${tftData.profileIconId}.png`;
-        } else {
-          alert('Player not found.');
-        }
-      } catch (error) {
-        console.error(error);
-        alert('Error fetching player data. Please try again.');
-      }
+  try {
+    const [gameName, tagLine] = this.searchQuery.split('#');
+    if (!gameName || !tagLine) {
+      alert('Please enter the full Riot ID in the format: name#tag');
+      return;
     }
+
+    const response = await axios.get(`${API_URL}/${gameName}/${tagLine}`);
+    const playerData = response.data;
+
+    if (playerData.puuid) {
+      const tftDataResponse = await axios.get(`http://localhost:3002/api/getTFTData/${playerData.puuid}`);
+      const tftData = tftDataResponse.data;
+
+      this.userInfo = {
+        name: gameName,
+        summonerLevel: tftData.summonerLevel
+      };
+      this.profileIconUrl = `http://ddragon.leagueoflegends.com/cdn/11.9.1/img/profileicon/${tftData.profileIconId}.png`;
+
+      // Fetch match IDs
+      const matchIdsResponse = await axios.get(`http://localhost:3002/api/getMatchIDs/${playerData.puuid}?start=0&count=20`);
+      const matchIds = matchIdsResponse.data;
+      console.log('Match IDs:', matchIds);
+      // Handle match IDs as needed
+    } else {
+      alert('Player not found.');
+    }
+  } catch (error) {
+    console.error('Error fetching player data:', error);
+    alert('Error fetching player data. Please try again.');
+  }
+}
+,
+    async getMatchIds(puuid) {
+  const API_URL = `http://localhost:3002/api/getMatchIDs/${puuid}?start=0&count=20`;
+  try {
+    const response = await axios.get(API_URL);
+    const matchIds = response.data;
+    console.log('Match IDs:', matchIds);
+    return matchIds;
+  } catch (error) {
+    console.error('Error fetching match IDs:', error);
+    throw error;
+  }
+}
+
   }
 });
 </script>
@@ -196,10 +209,10 @@ export default defineComponent({
 }
 
 .stats-table {
-  margin-bottom: 20px; /* Adjust margin between sections */
+  margin-bottom: 20px;
 }
 
 .recent-games-table {
-  margin-top: 20px; /* Adjust margin between sections */
+  margin-top: 20px;
 }
 </style>
