@@ -3,11 +3,7 @@
     <AppBar />
 
     <v-main>
-      <v-img
-        class="background"
-        src="@/assets/tftbackground.png"
-        alt="Background"
-      />
+
       <div class="search-field">
         <v-text-field
           v-model="searchQuery"
@@ -38,7 +34,7 @@ export default defineComponent({
   },
   methods: {
     async searchForPlayer() {
-      const API_URL = "http://localhost:3001/api/summoner";
+      const API_URL = "http://localhost:3002/api/getPUUID";
 
       if (this.searchQuery.trim() === '') {
         alert('Please enter a summoner name.');
@@ -46,7 +42,13 @@ export default defineComponent({
       }
 
       try {
-        const response = await axios.get(`${API_URL}/${this.searchQuery}`);
+        const [gameName, tagLine] = this.searchQuery.split('#');
+        if (!gameName || !tagLine) {
+          alert('Please enter the full Riot ID in the format: name#tag');
+          return;
+        }
+
+        const response = await axios.get(`${API_URL}/${gameName}/${tagLine}`);
         const playerData = response.data;
         console.log(playerData);
         // Here you can handle the player data, for example redirect to another view or show data in the UI

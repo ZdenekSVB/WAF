@@ -10,7 +10,7 @@
           <v-col cols="12" md="4">
             <v-card>
               <v-card-title>Profile Picture</v-card-title>
-              <v-img src="@/assets/prof_pic.png" aspect-ratio="1"></v-img>
+              <v-img :src="profileIconUrl" aspect-ratio="1"></v-img>
             </v-card>
           </v-col>
 
@@ -19,8 +19,9 @@
             <v-card>
               <v-card-title>User Info</v-card-title>
               <v-card-text>
-                <div class="info-placeholder">
-                  UserInfo Placeholder
+                <div>
+                  <div><strong>Summoner Name:</strong> {{ userInfo.name }}</div>
+                  <div><strong>Summoner Level:</strong> {{ userInfo.summonerLevel }}</div>
                 </div>
               </v-card-text>
             </v-card>
@@ -57,6 +58,7 @@
                   outlined
                   dense
                   hide-details
+                  @keyup.enter="searchForPlayer"
                 ></v-text-field>
               </v-card-text>
             </v-card>
@@ -105,6 +107,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import axios from 'axios';
 import AppBar from '@/components/AppBar.vue';
 
 export default defineComponent({
@@ -115,6 +118,11 @@ export default defineComponent({
   data() {
     return {
       searchQuery: '',
+      profileIconUrl: '',
+      userInfo: {
+        name: '',
+        summonerLevel: 0
+      },
       statsHeaders: ['Synergy', 'Matches', 'Avg Place'],
       statsData: [
         ['Data 1', 'Data 2', 'Data 3'],
@@ -126,6 +134,43 @@ export default defineComponent({
         // Add more rows as needed
       ]
     };
+  },
+  methods: {
+    async searchForPlayer() {
+      const API_URL = "http://localhost:3002/api/getPUUID";
+
+      if (this.searchQuery.trim() === '') {
+        alert('Please enter a summoner name.');
+        return;
+      }
+
+      try {
+        const [gameName, tagLine] = this.searchQuery.split('#');
+        if (!gameName || !tagLine) {
+          alert('Please enter the full Riot ID in the format: name#tag');
+          return;
+        }
+
+        const response = await axios.get(`${API_URL}/${gameName}/${tagLine}`);
+        const playerData = response.data;
+
+        if (playerData.puuid) {
+          const tftDataResponse = await axios.get(`http://localhost:3002/api/getTFTData/${playerData.puuid}`);
+          const tftData = tftDataResponse.data;
+
+          this.userInfo = {
+            name: gameName ,
+            summonerLevel: tftData.summonerLevel
+          };
+          this.profileIconUrl = `http://ddragon.leagueoflegends.com/cdn/11.9.1/img/profileicon/${tftData.profileIconId}.png`;
+        } else {
+          alert('Player not found.');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Error fetching player data. Please try again.');
+      }
+    }
   }
 });
 </script>
