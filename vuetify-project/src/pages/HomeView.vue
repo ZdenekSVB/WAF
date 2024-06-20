@@ -9,7 +9,7 @@
     <div class="game tft" @mouseover="expandImage" @mouseout="shrinkImage" @click="navigateTo('TFTSearch')">
       <img src="@/assets/tft.png" alt="Teamfight Tactics">
     </div>
-    <div class="game league-of-legends" @mouseover="expandImage" @mouseout="shrinkImage" @click="navigateTo('league-of-legends')">
+    <div class="game league-of-legends" @mouseover="expandImage" @mouseout="shrinkImage" @click="navigateTo('LOLSearch')">
       <img src="@/assets/league-of-legends.png" alt="League of Legends">
     </div>
   </main>

@@ -12,7 +12,8 @@ import TFTStatsView from '../pages/TFT/StatsView.vue';
 import TFTBuffNerfView from '../pages/TFT/BuffNerfView.vue';
 import TFTRankingView from '../pages/TFT/RankingView.vue';
 //LOL
-import Lol from '../pages/LOLView.vue';
+import LOLSearchView from '../pages/LOL/SearchView.vue';
+
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -38,11 +39,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/tft/buffs-nerfs', name: 'TFTBuffNerf', component: TFTBuffNerfView },
   { path: '/tft/ranking', name: 'TFTRanking', component: TFTRankingView },
 //LOL
-  {
-    path: '/league-of-legends',
-    name: 'league-of-legends',
-    component: Lol,
-  },
+  { path: '/lol/search', name: 'LOLSearch', component: LOLSearchView, },
 ];
 
 const router = createRouter({
