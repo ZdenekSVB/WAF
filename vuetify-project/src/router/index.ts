@@ -12,7 +12,7 @@ import TFTStatsView from '../pages/TFT/StatsView.vue';
 import TFTBuffNerfView from '../pages/TFT/BuffNerfView.vue';
 import TFTRankingView from '../pages/TFT/RankingView.vue';
 //LOL
-import LOLSearchView from '../pages/LOL/SearchView.vue';
+import LOLSearchView from '../pages/LOL/LOLSearchView.vue';
 
 
 const routes: Array<RouteRecordRaw> = [

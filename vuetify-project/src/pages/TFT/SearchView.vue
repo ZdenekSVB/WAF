@@ -16,6 +16,7 @@
           class="mx-auto"
           dense
           hide-details
+          @keyup.enter="searchForPlayer"
         ></v-text-field>
       </div>
     </v-main>
@@ -26,6 +27,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import axios from 'axios';
 
 export default defineComponent({
   name: 'SearchView',
@@ -34,6 +36,26 @@ export default defineComponent({
       searchQuery: ''
     };
   },
+  methods: {
+    async searchForPlayer() {
+      const API_URL = "http://localhost:3001/api/summoner";
+
+      if (this.searchQuery.trim() === '') {
+        alert('Please enter a summoner name.');
+        return;
+      }
+
+      try {
+        const response = await axios.get(`${API_URL}/${this.searchQuery}`);
+        const playerData = response.data;
+        console.log(playerData);
+        // Here you can handle the player data, for example redirect to another view or show data in the UI
+      } catch (error) {
+        console.error(error);
+        alert('Error fetching player data. Please try again.');
+      }
+    },
+  }
 });
 </script>
 
