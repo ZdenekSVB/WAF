@@ -2,11 +2,7 @@
   <v-app>
     <AppBar />
     <v-main>
-      <v-img
-        class="background"
-
-        alt="Background"
-      />
+      <v-img class="background" alt="Background" />
       <div class="search-field">
         <v-text-field
           v-model="gameName"
@@ -25,10 +21,7 @@
           hide-details
           @keyup.enter="fetchPUUID"
         ></v-text-field>
-      </div>
-      <div v-if="userData">
-        <h2>User Data:</h2>
-        <pre>{{ userData }}</pre>
+        <v-btn @click="fetchPUUID" class="mx-auto">Search</v-btn>
       </div>
     </v-main>
     <router-view />
@@ -36,50 +29,59 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
 import axios from 'axios';
-import AppBar from '@/components/AppBar.vue'; // Adjust the path as needed
+import { useRouter } from 'vue-router';
+import { useLolStore } from '@/stores/lolStore';
+import AppBar from '@/components/AppBar.vue';
 
 export default defineComponent({
-  name: 'SearchView',
+  name: 'LOLSearchView',
   components: {
     AppBar
   },
-  data() {
-    return {
-      gameName: '',
-      tagLine: '',
-      userData: null
-    };
-  },
-  methods: {
-    async fetchPUUID() {
-      const gameName = this.gameName;
-      const tagLine = this.tagLine;
+  setup() {
+    const gameName = ref('');
+    const tagLine = ref('');
+    const router = useRouter();
+    const lolStore = useLolStore();
 
-      if (!gameName || !tagLine) {
+    const fetchPUUID = async () => {
+      if (!gameName.value || !tagLine.value) {
         alert('Please enter both Game Name and Tag Line');
         return;
       }
 
       try {
-        const puuidResponse = await axios.get(`http://localhost:3002/api/getPUUID/${gameName}/${tagLine}`);
+        const puuidResponse = await axios.get(`http://localhost:3002/api/getPUUID/${gameName.value}/${tagLine.value}`);
         const puuid = puuidResponse.data.puuid;
-        this.fetchUserData(puuid);
+        await fetchUserData(puuid);
+        navigateToAccountView();
       } catch (error) {
         console.error('Error fetching PUUID:', error);
         alert('Error fetching PUUID. Please try again.');
       }
-    },
-    async fetchUserData(puuid: string) {
+    };
+
+    const fetchUserData = async (puuid: string) => {
       try {
         const response = await axios.get(`http://localhost:3002/api/getSummonerData/${puuid}`);
-        this.userData = response.data;
+        lolStore.setUserData(response.data);
       } catch (error) {
         console.error('Error fetching user data:', error);
         alert('Error fetching user data. Please try again.');
       }
-    }
+    };
+
+    const navigateToAccountView = () => {
+      router.push({ name: 'LOLAccount' });
+    };
+
+    return {
+      gameName,
+      tagLine,
+      fetchPUUID
+    };
   }
 });
 </script>
