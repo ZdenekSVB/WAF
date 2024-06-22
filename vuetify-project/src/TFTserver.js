@@ -28,12 +28,56 @@ app.get('/api/summoner/:name/:tag', async (req, res) => {
         const leagueResponse = await axios.get(leagueUrl);
         console.log('League Data Response:', leagueResponse.data);
 
+        const matchUrl = `https://europe.api.riotgames.com/tft/match/v1/matches/by-puuid/${puuid}/ids?start=0&count=3&api_key=${RIOT_API_KEY}`;
+        const matchResponse = await axios.get(matchUrl);
+        console.log('Match IDs Response:', matchResponse.data);
+
+        const matchDetailsPromises = matchResponse.data.map(async (matchId) => {
+            const matchDetailsUrl = `https://europe.api.riotgames.com/tft/match/v1/matches/${matchId}?api_key=${RIOT_API_KEY}`;
+            const matchDetailsResponse = await axios.get(matchDetailsUrl);
+
+            // Filtering participant data
+            const participantsData = matchDetailsResponse.data.info.participants.map(participant => {
+                const filteredParticipant = {
+                    augments: participant.augments,
+                    companion: participant.companion,
+                    gold_left: participant.gold_left,
+                    last_round: participant.last_round,
+                    level: participant.level,
+                    missions: participant.missions,
+                    placement: participant.placement,
+                    players_eliminated: participant.players_eliminated,
+                    puuid: participant.puuid,
+                    time_eliminated: participant.time_eliminated,
+                    total_damage_to_players: participant.total_damage_to_players,
+                };
+
+                console.log(`Participant in match ${matchId}:`,filteredParticipant);
+                return filteredParticipant;
+            });
+
+            return {
+                matchId: matchId,
+                matchDetails: {
+                    ...matchDetailsResponse.data,
+                    info: {
+                        ...matchDetailsResponse.data.info,
+                        participants: participantsData
+                    }
+                }
+            };
+        });
+
+        const matchDetails = await Promise.all(matchDetailsPromises);
+
         const summonerData = {
             gameName: accountResponse.data.gameName,
             tagLine: accountResponse.data.tagLine,
             summonerLevel: tftSummonerResponse.data.summonerLevel,
             profileIconId: tftSummonerResponse.data.profileIconId,
-            leagueData: leagueResponse.data
+            leagueData: leagueResponse.data,
+            matchIds: matchResponse.data,
+            matchDetails: matchDetails
         };
 
         res.json(summonerData);
