@@ -1,77 +1,48 @@
 const express = require('express');
 const axios = require('axios');
-const cors = require('cors');
-
 const app = express();
-const PORT = 3002;
+const port = 3003;
 
+const cors = require('cors');
 app.use(cors());
+
+const RIOT_API_KEY = 'RGAPI-56ee19bf-cc73-433e-9873-b5d4c289dc57';
+
 app.use(express.json());
 
+app.get('/api/summoner/:name/:tag', async (req, res) => {
+    const { name, tag } = req.params;
+    const accountUrl = `https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${name}/${tag}?api_key=${RIOT_API_KEY}`;
 
-const API_KEY = "RGAPI-5768047d-282f-42f0-8c59-2ed6d5a4e8fc";
-const ACCOUNT_API_ROUTING_VAL = "https://europe.api.riotgames.com"; // Assuming this is for account API
-const TFT_API_ROUTING_VAL = "https://eun1.api.riotgames.com"; // Assuming this is for TFT API
+    try {
+        const accountResponse = await axios.get(accountUrl);
+        console.log('Initial Summoner Data Response:', accountResponse.data);
+        const puuid = accountResponse.data.puuid;
 
-app.get('/api/getPUUID/:gameName/:tagLine', async (req, res) => {
-  const { gameName, tagLine } = req.params;
-  try {
-    const response = await axios.get(`${ACCOUNT_API_ROUTING_VAL}/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}`, {
-      headers: {
-        'X-Riot-Token': API_KEY
-      }
-    });
-    res.json(response.data);
-  } catch (error) {
-    console.error('Error fetching PUUID:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Error fetching PUUID', details: error.response ? error.response.data : error.message });
-  }
+        const tftSummonerUrl = `https://eun1.api.riotgames.com/tft/summoner/v1/summoners/by-puuid/${puuid}?api_key=${RIOT_API_KEY}`;
+        const tftSummonerResponse = await axios.get(tftSummonerUrl);
+        console.log('TFT Summoner Data Response:', tftSummonerResponse.data);
+
+        const summonerId = tftSummonerResponse.data.id;
+        const leagueUrl = `https://eun1.api.riotgames.com/tft/league/v1/entries/by-summoner/${summonerId}?api_key=${RIOT_API_KEY}`;
+        const leagueResponse = await axios.get(leagueUrl);
+        console.log('League Data Response:', leagueResponse.data);
+
+        const summonerData = {
+            gameName: accountResponse.data.gameName,
+            tagLine: accountResponse.data.tagLine,
+            summonerLevel: tftSummonerResponse.data.summonerLevel,
+            profileIconId: tftSummonerResponse.data.profileIconId,
+            leagueData: leagueResponse.data
+        };
+
+        res.json(summonerData);
+    } catch (error) {
+        console.error('Error:', error.response ? error.response.data : error.message);
+        res.status(500).send(error.response ? error.response.data : error.message);
+    }
 });
 
-app.get('/api/getTFTData/:puuid', async (req, res) => {
-  const { puuid } = req.params;
-  try {
-    const response = await axios.get(`${TFT_API_ROUTING_VAL}/tft/summoner/v1/summoners/by-puuid/${puuid}`, {
-      headers: {
-        'X-Riot-Token': API_KEY
-      }
-    });
-    res.json(response.data);
-  } catch (error) {
-    console.error('Error fetching TFT data:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Error fetching TFT data', details: error.response ? error.response.data : error.message });
-  }
-});
-
-// Add endpoint for fetching match IDs with correct format
-app.get('/api/getMatchIDs/:puuid', async (req, res) => {
-  const { puuid } = req.params;
-  try {
-    const start = req.query.start || 0; // Default start to 0 if not provided
-    const count = req.query.count || 20; // Default count to 20 if not provided
-    const url = `${TFT_API_ROUTING_VAL}/tft/match/v1/matches/by-puuid/${puuid}/ids?start=${start}&count=${count}&api_key=${API_KEY}`;
-    const response = await axios.get(url);
-    res.json(response.data);
-  } catch (error) {
-    console.error('Error fetching match IDs:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Error fetching match IDs', details: error.response ? error.response.data : error.message });
-  }
-});
-
-// Endpoint pro získání informací o hře na základě ID hry
-app.get('/api/getMatchDetails/:matchId', async (req, res) => {
-  const { matchId } = req.params;
-  try {
-    const url = `${MATCH_API_ROUTING_VAL}/tft/match/v1/matches/${matchId}?api_key=${API_KEY}`;
-    const response = await axios.get(url);
-    res.json(response.data);
-  } catch (error) {
-    console.error('Error fetching match details:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Error fetching match details', details: error.response ? error.response.data : error.message });
-  }
-});
-
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
 });
