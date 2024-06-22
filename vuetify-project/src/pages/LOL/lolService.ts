@@ -12,7 +12,6 @@ export const fetchUserData = async (gameName: string, tagLine: string): Promise<
             const summonerDataResponse = await axios.get(`http://localhost:3002/api/getSummonerData/${playerData.puuid}`);
             const summonerData = summonerDataResponse.data;
 
-            //const profileIconUrl = `http://ddragon.leagueoflegends.com/cdn/11.9.1/img/profileicon/${summonerData.profileIconId}.png`;
             const profileIconURL = `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/${summonerData.profileIconId}.jpg`;
             console.log(`Received nickname service: ${summonerData.name}`);
             console.log(`Received profileIconID service: ${summonerData.profileIconId}`);

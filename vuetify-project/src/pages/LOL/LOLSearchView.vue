@@ -56,6 +56,7 @@ export default defineComponent({
         const puuidResponse = await axios.get(`http://localhost:3002/api/getPUUID/${gameName.value}/${tagLine.value}`);
         const puuid = puuidResponse.data.puuid;
         await fetchUserData(puuid);
+        console.log(`Received search puuid: ${puuid}`);
         navigateToAccountView();
       } catch (error) {
         console.error('Error fetching PUUID:', error);
@@ -66,7 +67,16 @@ export default defineComponent({
     const fetchUserData = async (puuid: string) => {
       try {
         const response = await axios.get(`http://localhost:3002/api/getSummonerData/${puuid}`);
+        console.log(`Received search nickname: ${response.data.name}`);
+        console.log(`Received search iconId: ${response.data.profileIconId}`);
+        console.log(`Received search iconUrl: ${response.data.profileIconURL}`);
+        console.log(`Received search level: ${response.data.summonerLevel}`);
         lolStore.setUserData(response.data);
+        lolStore.userData.profileIconURL
+        console.log(`Received store nickname: ${lolStore.userData.name}`);
+        console.log(`Received store iconId: ${lolStore.userData.profileIconId}`);
+        console.log(`Received store iconUrl: ${lolStore.userData.profileIconURL}`);
+        console.log(`Received store level: ${lolStore.userData.summonerLevel}`);
       } catch (error) {
         console.error('Error fetching user data:', error);
         alert('Error fetching user data. Please try again.');
