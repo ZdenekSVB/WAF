@@ -33,19 +33,30 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import axios from 'axios';
 
 export default defineComponent({
   name: 'RankingView',
   data() {
     return {
-      headers: ['#', 'Summoner', 'Tier', 'LP', 'Game'],
-      rows: [
-        ['#1', 'Summoner 1', 'Diamond', '90 LP', 'League of Legends'],
-        ['#2', 'Summoner 2', 'Gold', '75 LP', 'Valorant'],
-        ['#3', 'Summoner 3', 'Platinum', '82 LP', 'Apex Legends'],
-        // Add more rows as needed
-      ]
+      headers: ['#', 'Summoner', 'Tier', 'LP', 'Wins', 'Losses'],
+      rows: []
     };
+  },
+  async created() {
+    try {
+      const response = await axios.get('http://localhost:3003/api/ranking');
+      this.rows = response.data.map((summoner, index) => [
+        `#${index + 1}`,
+        `${summoner.summonerName}#${summoner.tagLine}`,
+        'Diamond I',
+        `${summoner.leaguePoints} LP`,
+        `${summoner.wins} Wins`,
+        `${summoner.losses} Losses`
+      ]);
+    } catch (error) {
+      console.error('Error fetching ranking data:', error);
+    }
   }
 });
 </script>

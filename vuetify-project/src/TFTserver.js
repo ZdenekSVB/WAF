@@ -6,7 +6,7 @@ const port = 3003;
 const cors = require('cors');
 app.use(cors());
 
-const RIOT_API_KEY = 'RGAPI-56ee19bf-cc73-433e-9873-b5d4c289dc57';
+const RIOT_API_KEY = 'RGAPI-1284f84c-258a-4803-a521-0c4fb230b5e2';
 
 app.use(express.json());
 
@@ -52,7 +52,7 @@ app.get('/api/summoner/:name/:tag', async (req, res) => {
                     total_damage_to_players: participant.total_damage_to_players,
                 };
 
-                console.log(`Participant in match ${matchId}:`,filteredParticipant);
+                console.log(`Participant in match ${matchId}:`, filteredParticipant);
                 return filteredParticipant;
             });
 
@@ -86,6 +86,42 @@ app.get('/api/summoner/:name/:tag', async (req, res) => {
         res.status(500).send(error.response ? error.response.data : error.message);
     }
 });
+
+app.get('/api/ranking', async (req, res) => {
+    const tier = 'DIAMOND';
+    const division = 'I';
+    const queue = 'RANKED_TFT';
+    const page = 1;
+
+    const rankingUrl = `https://eun1.api.riotgames.com/tft/league/v1/entries/${tier}/${division}?queue=${queue}&page=${page}&api_key=${RIOT_API_KEY}`;
+
+    try {
+        const rankingResponse = await axios.get(rankingUrl);
+        const rankedPlayers = rankingResponse.data;
+
+        const summonerDetailsPromises = rankedPlayers.map(async player => {
+            const summonerUrl = `https://europe.api.riotgames.com/riot/account/v1/accounts/by-puuid/${player.puuid}?api_key=${RIOT_API_KEY}`;
+            const summonerResponse = await axios.get(summonerUrl);
+
+            return {
+                rank: player.rank,
+                leaguePoints: player.leaguePoints,
+                wins: player.wins,
+                losses: player.losses,
+                summonerName: summonerResponse.data.gameName,
+                tagLine: summonerResponse.data.tagLine
+            };
+        });
+
+        const summonerDetails = await Promise.all(summonerDetailsPromises);
+
+        res.json(summonerDetails);
+    } catch (error) {
+        console.error('Error:', error.response ? error.response.data : error.message);
+        res.status(500).send(error.response ? error.response.data : error.message);
+    }
+});
+
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
