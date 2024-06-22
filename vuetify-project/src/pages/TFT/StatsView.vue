@@ -1,7 +1,6 @@
 <template>
   <v-app>
     <AppBar />
-
     <v-main>
       <v-container>
         <v-row>
@@ -17,28 +16,24 @@
               <v-card-title>User Info</v-card-title>
               <v-card-text>
                 <div>
+                  <div><strong>TagLine:</strong> {{ userInfo.tagLine }}</div>
                   <div><strong>Summoner Name:</strong> {{ userInfo.name }}</div>
                   <div><strong>Summoner Level:</strong> {{ userInfo.summonerLevel }}</div>
                 </div>
               </v-card-text>
             </v-card>
             <v-card>
-              <v-card-title>Stats</v-card-title>
+              <v-card-title>League Info</v-card-title>
               <v-card-text>
-                <v-row class="header-row">
-                  <v-col v-for="(header, index) in statsHeaders" :key="index" cols="4">
-                    <div class="header-cell">
-                      {{ header }}
-                    </div>
-                  </v-col>
-                </v-row>
-                <v-row v-for="(row, rowIndex) in statsData" :key="rowIndex">
-                  <v-col v-for="(content, colIndex) in row" :key="colIndex" cols="4">
-                    <div class="content-cell">
-                      {{ content }}
-                    </div>
-                  </v-col>
-                </v-row>
+                <div v-for="(league, index) in userInfo.leagueData" :key="index">
+                  <div><strong>Queue Type:</strong> {{ league.queueType }}</div>
+                  <div><strong>Tier:</strong> {{ league.tier }}</div>
+                  <div><strong>Rank:</strong> {{ league.rank }}</div>
+                  <div><strong>League Points:</strong> {{ league.leaguePoints }}</div>
+                  <div><strong>Wins:</strong> {{ league.wins }}</div>
+                  <div><strong>Losses:</strong> {{ league.losses }}</div>
+                  <hr/>
+                </div>
               </v-card-text>
             </v-card>
           </v-col>
@@ -69,33 +64,30 @@
         </v-row>
 
         <v-row class="recent-games-table">
-  <v-col cols="12">
-    <v-card>
-      <v-card-title>Recent Games</v-card-title>
-      <v-card-text>
-        <v-row class="header-row">
-          <v-col v-for="(header, index) in recentGamesHeaders" :key="index" cols="2">
-            <div class="header-cell">
-              {{ header }}
-            </div>
+          <v-col cols="12">
+            <v-card>
+              <v-card-title>Recent Games</v-card-title>
+              <v-card-text>
+                <v-row class="header-row">
+                  <v-col v-for="(header, index) in recentGamesHeaders" :key="index" cols="2">
+                    <div class="header-cell">
+                      {{ header }}
+                    </div>
+                  </v-col>
+                </v-row>
+                <v-row v-for="(row, rowIndex) in recentGamesData" :key="rowIndex">
+                  <v-col v-for="(content, colIndex) in row" :key="colIndex" cols="2">
+                    <div class="content-cell">
+                      {{ content }}
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
           </v-col>
         </v-row>
-        <v-row v-for="(row, rowIndex) in recentGamesData" :key="rowIndex">
-          <v-col v-for="(content, colIndex) in row" :key="colIndex" cols="2">
-            <div class="content-cell">
-              {{ content }}
-            </div>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
-  </v-col>
-</v-row>
-
-
       </v-container>
     </v-main>
-
     <router-view />
   </v-app>
 </template>
@@ -116,7 +108,9 @@ export default defineComponent({
       profileIconUrl: '',
       userInfo: {
         name: '',
-        summonerLevel: 0
+        summonerLevel: 0,
+        tagLine: '',
+        leagueData: []
       },
       statsHeaders: ['Synergy', 'Matches', 'Avg Place'],
       statsData: [
@@ -130,62 +124,22 @@ export default defineComponent({
   },
   methods: {
     async searchForPlayer() {
-  const API_URL = "http://localhost:3002/api/getPUUID";
-
-  if (this.searchQuery.trim() === '') {
-    alert('Please enter a summoner name.');
-    return;
-  }
-
-  try {
-    const [gameName, tagLine] = this.searchQuery.split('#');
-    if (!gameName || !tagLine) {
-      alert('Please enter the full Riot ID in the format: name#tag');
-      return;
+      const [name, tag] = this.searchQuery.split('#');
+      try {
+        console.log(`Fetching data for ${name}#${tag}`);
+        const response = await axios.get(`http://localhost:3003/api/summoner/${name}/${tag}`);
+        console.log('Response data:', response.data);
+        this.userInfo.name = response.data.gameName;
+        this.userInfo.summonerLevel = response.data.summonerLevel;
+        this.userInfo.tagLine = response.data.tagLine;
+        this.userInfo.leagueData = response.data.leagueData;
+        this.profileIconUrl = `http://ddragon.leagueoflegends.com/cdn/11.24.1/img/profileicon/${response.data.profileIconId}.png`;
+      } catch (error) {
+        console.error('Error fetching player data:', error);
+      }
     }
-
-    const response = await axios.get(`${API_URL}/${gameName}/${tagLine}`);
-    const playerData = response.data;
-
-    if (playerData.puuid) {
-      const tftDataResponse = await axios.get(`http://localhost:3002/api/getTFTData/${playerData.puuid}`);
-      const tftData = tftDataResponse.data;
-
-      this.userInfo = {
-        name: gameName,
-        summonerLevel: tftData.summonerLevel
-      };
-      this.profileIconUrl = `http://ddragon.leagueoflegends.com/cdn/11.9.1/img/profileicon/${tftData.profileIconId}.png`;
-
-      // Fetch match IDs
-      const matchIdsResponse = await axios.get(`http://localhost:3002/api/getMatchIDs/${playerData.puuid}?start=0&count=20`);
-      const matchIds = matchIdsResponse.data;
-      console.log('Match IDs:', matchIds);
-      // Handle match IDs as needed
-    } else {
-      alert('Player not found.');
-    }
-  } catch (error) {
-    console.error('Error fetching player data:', error);
-    alert('Error fetching player data. Please try again.');
   }
-}
-,
-    async getMatchIds(puuid) {
-  const API_URL = `http://localhost:3002/api/getMatchIDs/${puuid}?start=0&count=20`;
-  try {
-    const response = await axios.get(API_URL);
-    const matchIds = response.data;
-    console.log('Match IDs:', matchIds);
-    return matchIds;
-  } catch (error) {
-    console.error('Error fetching match IDs:', error);
-    throw error;
-  }
-}
-
-  }
-});
+})
 </script>
 
 <style scoped>
