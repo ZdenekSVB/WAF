@@ -9,8 +9,8 @@ app.use(cors());
 app.use(express.json());
 
 const API_KEY = "RGAPI-dd3feb4f-e30e-4649-bf87-9719afcfbeb9";
-const ACCOUNT_API_ROUTING_VAL = "https://europe.api.riotgames.com"; // Europe for EUNE accounts
-const SUMMONER_API_ROUTING_VAL = "https://eun1.api.riotgames.com"; // EUNE specific region
+const ACCOUNT_API_ROUTING_VAL = "https://europe.api.riotgames.com"; 
+const SUMMONER_API_ROUTING_VAL = "https://eun1.api.riotgames.com"; 
 
 app.get('/api/getPUUID/:gameName/:tagLine', async (req, res) => {
   const { gameName, tagLine } = req.params;
@@ -43,6 +43,62 @@ app.get('/api/getSummonerData/:puuid', async (req, res) => {
   } catch (error) {
     console.error('Error fetching user data:', error.response ? error.response.data : error.message);
     res.status(500).json({ error: 'Error fetching user data', details: error.response ? error.response.data : error.message });
+  }
+});
+
+const FACEIT_API_KEY = "798238e5-2961-4be7-a509-c64dcb24d4bc"; 
+const FACEIT_API_URL = "https://open.faceit.com/data/v4";
+
+
+app.get('/api/getFaceitProfile/:nickname', async (req, res) => {
+  const { nickname } = req.params;
+  console.log(`Received nickname: ${nickname}`);
+  try {
+    const response = await axios.get(`${FACEIT_API_URL}/players?nickname=${nickname}`, {
+      headers: {
+        'Authorization': `Bearer ${FACEIT_API_KEY}`
+      }
+    });
+    console.log('Response from FACEIT API:', response.data);
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching FACEIT profile:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'Error fetching FACEIT profile', details: error.response ? error.response.data : error.message });
+  }
+});
+
+
+app.get('/api/getFaceitStats/:playerId', async (req, res) => {
+  const { playerId } = req.params;
+  console.log(`Received player ID: ${playerId}`);
+  try {
+    const response = await axios.get(`${FACEIT_API_URL}/players/${playerId}/stats/cs2`, {
+      headers: {
+        'Authorization': `Bearer ${FACEIT_API_KEY}`
+      }
+    });
+    console.log('Response from FACEIT API:', response.data);
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching FACEIT stats:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'Error fetching FACEIT stats', details: error.response ? error.response.data : error.message });
+  }
+});
+
+app.get('/api/getFaceitMatches/:playerId', async (req, res) => {
+  const { playerId } = req.params;
+  console.log(`Received player ID: ${playerId}`);
+  try {
+    const response = await axios.get(`${FACEIT_API_URL}/players/${playerId}/history`, {
+      headers: {
+        'Authorization': `Bearer ${FACEIT_API_KEY}`
+      }
+    });
+    console.log('Response from FACEIT API:', response.data);
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching FACEIT matches:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'Error fetching FACEIT matches', details: error.response ? error.response.data : error.message });
   }
 });
 

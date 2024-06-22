@@ -5,7 +5,7 @@ import HomeView from '../pages/HomeView.vue';
 //VALORANT
 import Valorant from '../pages/ValorantView.vue';
 //CSGO
-import Csgo from '../pages/CSView.vue';
+import Csgo from '../pages/CS/CSView.vue';
 //TFT
 import TFTSearchView from '../pages/TFT/SearchView.vue';
 import TFTStatsView from '../pages/TFT/StatsView.vue';
