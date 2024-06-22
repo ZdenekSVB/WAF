@@ -3,9 +3,9 @@
       <header>
         <img src="@/assets/FACEITLogo.png" alt="FACEIT Logo" class="logo">
         <nav>
-          <a @click="showStats">Stats</a>
-          <a @click="showMatchHistory">Match history</a>
-          <a @click="showElo">ELO</a>
+          <a @click.prevent="setView('stats')">Stats</a>
+          <a @click.prevent="setView('matchHistory')">Match history</a>
+          <a @click.prevent="setView('elo')">ELO</a>
         </nav>
       </header>
       <div class="search-section">
@@ -28,7 +28,7 @@
         <div v-if="view === 'matchHistory'" class="match-history">
           <h3>Match history</h3>
           <div v-for="match in matchHistory" :key="match.match_id" class="match-card">
-            <img :src="getMapImage(match)" alt="Map Image" class="map-image">
+            <img :src="getMapImage(match.label)" alt="Map Image" class="map-image">
             <div class="match-details">
               <p :class="{'win': match.results === 'Win', 'loss': match.results === 'Loss'}">{{ match.results }}</p>
               <p>K-A-D: {{ match.kills }}-{{ match.assists }}-{{ match.deaths }}</p>
@@ -66,6 +66,7 @@
     rating: number;
     date: string;
     elo: number;
+    label: string;
   }
   
   export default defineComponent({
@@ -91,18 +92,14 @@
             console.log('Stats fetched:', stats);
             this.profile = { ...this.profile, ...stats };
             if (this.view === 'matchHistory') {
-              console.log(`Fetching match history for player ID: ${this.profile.player_id}`);
-              const matchHistory = await getFaceitMatchHistory(this.profile.player_id);
-              console.log('Match history fetched:', matchHistory);
-              this.matchHistory = matchHistory;
+              await this.fetchMatchHistory();
             }
           }
         } catch (error) {
           console.error('Error fetching profile or stats:', error);
         }
       },
-      async showMatchHistory() {
-        this.view = 'matchHistory';
+      async fetchMatchHistory() {
         if (this.profile) {
           try {
             console.log(`Fetching match history for player ID: ${this.profile.player_id}`);
@@ -114,15 +111,21 @@
           }
         }
       },
-      showStats() {
-        this.view = 'stats';
+      setView(view: string) {
+        this.view = view;
+        if (view === 'matchHistory' && this.profile) {
+          this.fetchMatchHistory();
+        }
       },
-      showElo() {
-        this.view = 'elo';
-      },
-      getMapImage(match) {
-    
-        return match.map_image;
+      getMapImage(label: string) {
+        const mapImages: { [key: string]: string } = {
+          Anubis: 'Anubis.png',
+          Nuke: 'Nuke.png',
+          Overpass: 'Overpass.png',
+          Mirage: 'Mirage.png',
+          Ancient: 'Ancient.png',
+        };
+        return require(`@/assets/maps/${mapImages[label]}`);
       }
     }
   });

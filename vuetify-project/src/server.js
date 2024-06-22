@@ -67,7 +67,6 @@ app.get('/api/getFaceitProfile/:nickname', async (req, res) => {
   }
 });
 
-
 app.get('/api/getFaceitStats/:playerId', async (req, res) => {
   const { playerId } = req.params;
   console.log(`Received player ID: ${playerId}`);
@@ -87,21 +86,43 @@ app.get('/api/getFaceitStats/:playerId', async (req, res) => {
 
 app.get('/api/getFaceitMatches/:playerId', async (req, res) => {
   const { playerId } = req.params;
-  console.log(`Received player ID: ${playerId}`);
   try {
     const response = await axios.get(`${FACEIT_API_URL}/players/${playerId}/history`, {
       headers: {
         'Authorization': `Bearer ${FACEIT_API_KEY}`
       }
     });
-    console.log('Response from FACEIT API:', response.data);
-    res.json(response.data);
+
+    const matches = response.data.items.slice(0, 10).map(item => {
+      let playerStats = null;
+
+      for (const teamId in item.teams) {
+        const team = item.teams[teamId];
+        const player = team.players.find(p => p.player_id === playerId);
+        if (player) {
+          playerStats = player.player_stats;
+          break;
+        }
+      }
+
+      return {
+        match_id: item.match_id,
+        results: playerStats && item.results.winner === playerStats.team_id ? 'Win' : 'Loss',
+        kills: playerStats.kills,
+        assists: playerStats.assists,
+        deaths: playerStats.deaths,
+        rating: playerStats.rating,
+        date: new Date(item.finished_at * 1000).toLocaleDateString(),
+        elo: playerStats.elo,
+        label: item.label || 'Unknown'
+      };
+    });
+
+    res.json(matches);
   } catch (error) {
-    console.error('Error fetching FACEIT matches:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Error fetching FACEIT matches', details: error.response ? error.response.data : error.message });
+    console.error('Error fetching FACEIT matches:', error);
+    res.status(500).json({ error: 'Error fetching FACEIT matches' });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+
