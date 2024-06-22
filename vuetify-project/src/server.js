@@ -46,7 +46,7 @@ app.get('/api/getSummonerData/:puuid', async (req, res) => {
 
       const summonerData = {
           ...summonerResponse.data,
-          name: accountResponse.data.gameName // Add the gameName from account data to summoner data
+          name: accountResponse.data.gameName 
       };
 
       res.json(summonerData);

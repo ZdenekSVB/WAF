@@ -7,7 +7,7 @@
           <v-col cols="12" md="4">
             <v-card>
               <v-card-title>Profile Picture</v-card-title>
-              <v-img :src="profileIconUrl" aspect-ratio="1"></v-img>
+              <v-img :src="userInfo.profileIconURL" aspect-ratio="1"></v-img>
             </v-card>
           </v-col>
 
@@ -65,16 +65,8 @@ export default defineComponent({
     const lolStore = useLolStore();
     const userInfo = computed(() => lolStore.getUserData);
 
-    const profileIconUrl = computed(() => {
-      if (userInfo.value && userInfo.value.profileIconId) {
-        return `https://ddragon.leagueoflegends.com/cdn/13.6.1/img/profileicon/${userInfo.value.profileIconId}.png`;
-      }
-      return '';
-    });
-
     return {
       userInfo,
-      profileIconUrl,
       lolStore
     };
   },
@@ -87,6 +79,10 @@ export default defineComponent({
       }
       const userData = await fetchUserData(gameName, tagLine);
       if (userData) {
+        console.log(`Received nickname: ${userData.name}`);
+        console.log(`Received profileIconID: ${userData.profileIconId}`);
+        console.log(`Received profileIconURL: ${userData.profileIconURL}`);
+        console.log(`Received level: ${userData.summonerLevel}`);
         this.lolStore.setUserData(userData);
       }
     }
