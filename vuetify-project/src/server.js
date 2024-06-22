@@ -8,7 +8,7 @@ const PORT = 3002;
 app.use(cors());
 app.use(express.json());
 
-const API_KEY = "RGAPI-dd3feb4f-e30e-4649-bf87-9719afcfbeb9";
+const API_KEY = "RGAPI-ff351174-6c93-43ca-9976-d36b17e2e5f4";
 const ACCOUNT_API_ROUTING_VAL = "https://europe.api.riotgames.com"; 
 const SUMMONER_API_ROUTING_VAL = "https://eun1.api.riotgames.com"; 
 
