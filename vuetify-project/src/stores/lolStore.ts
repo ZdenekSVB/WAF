@@ -1,15 +1,16 @@
 import { defineStore } from 'pinia';
+import { LolAccountData } from '@/types/index';
 
 export const useLolStore = defineStore('lolStore', {
   state: () => ({
-    userData: null
+    userData: {} as LolAccountData
   }),
   actions: {
-    setUserData(data) {
+    setUserData(data: LolAccountData) {
       this.userData = data;
     }
   },
   getters: {
-    getUserData: state => state.userData
+    getUserData: (state) => state.userData
   }
 });

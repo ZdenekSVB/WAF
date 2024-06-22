@@ -12,39 +12,50 @@ const API_KEY = "RGAPI-ff351174-6c93-43ca-9976-d36b17e2e5f4";
 const ACCOUNT_API_ROUTING_VAL = "https://europe.api.riotgames.com"; 
 const SUMMONER_API_ROUTING_VAL = "https://eun1.api.riotgames.com"; 
 
+// Endpoint for fetching PUUID by Riot ID
 app.get('/api/getPUUID/:gameName/:tagLine', async (req, res) => {
   const { gameName, tagLine } = req.params;
-  console.log(`Received gameName: ${gameName}, tagLine: ${tagLine}`);
   try {
-    const response = await axios.get(`${ACCOUNT_API_ROUTING_VAL}/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}`, {
-      headers: {
-        'X-Riot-Token': API_KEY
-      }
-    });
-    console.log('Response from Riot API:', response.data);
-    res.json(response.data);
+      const response = await axios.get(`${ACCOUNT_API_ROUTING_VAL}/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}`, {
+          headers: {
+              'X-Riot-Token': API_KEY
+          }
+      });
+      res.json(response.data);
   } catch (error) {
-    console.error('Error fetching PUUID:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Error fetching PUUID', details: error.response ? error.response.data : error.message });
+      console.error('Error fetching PUUID:', error.response ? error.response.data : error.message);
+      res.status(500).json({ error: 'Error fetching PUUID', details: error.response ? error.response.data : error.message });
   }
 });
 
+// Endpoint for fetching summoner data by PUUID
 app.get('/api/getSummonerData/:puuid', async (req, res) => {
   const { puuid } = req.params;
-  console.log(`Received PUUID: ${puuid}`);
   try {
-    const response = await axios.get(`${SUMMONER_API_ROUTING_VAL}/lol/summoner/v4/summoners/by-puuid/${puuid}`, {
-      headers: {
-        'X-Riot-Token': API_KEY
-      }
-    });
-    console.log('Response from Riot API:', response.data);
-    res.json(response.data);
+      const accountResponse = await axios.get(`${ACCOUNT_API_ROUTING_VAL}/riot/account/v1/accounts/by-puuid/${puuid}`, {
+          headers: {
+              'X-Riot-Token': API_KEY
+          }
+      });
+
+      const summonerResponse = await axios.get(`${SUMMONER_API_ROUTING_VAL}/lol/summoner/v4/summoners/by-puuid/${puuid}`, {
+          headers: {
+              'X-Riot-Token': API_KEY
+          }
+      });
+
+      const summonerData = {
+          ...summonerResponse.data,
+          name: accountResponse.data.gameName // Add the gameName from account data to summoner data
+      };
+
+      res.json(summonerData);
   } catch (error) {
-    console.error('Error fetching user data:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Error fetching user data', details: error.response ? error.response.data : error.message });
+      console.error('Error fetching summoner data:', error.response ? error.response.data : error.message);
+      res.status(500).json({ error: 'Error fetching summoner data', details: error.response ? error.response.data : error.message });
   }
 });
+
 
 const FACEIT_API_KEY = '798238e5-2961-4be7-a509-c64dcb24d4bc';
 const FACEIT_API_URL = 'https://open.faceit.com/data/v4';
