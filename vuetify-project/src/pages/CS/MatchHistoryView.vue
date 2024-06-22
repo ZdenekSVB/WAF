@@ -27,7 +27,7 @@
         </div>
         <div v-if="view === 'matchHistory'" class="match-history">
           <h3>Match history</h3>
-          <div v-for="match in matchHistory" :key="match.match_id" class="match-card">
+          <div v-for="match in matchHistory.slice(0, 10)" :key="match.match_id" class="match-card">
             <img :src="getMapImage(match.label)" alt="Map Image" class="map-image">
             <div class="match-details">
               <p :class="{'win': match.results === 'Win', 'loss': match.results === 'Loss'}">{{ match.results }}</p>

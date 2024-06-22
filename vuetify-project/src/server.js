@@ -46,9 +46,8 @@ app.get('/api/getSummonerData/:puuid', async (req, res) => {
   }
 });
 
-const FACEIT_API_KEY = "798238e5-2961-4be7-a509-c64dcb24d4bc"; 
-const FACEIT_API_URL = "https://open.faceit.com/data/v4";
-
+const FACEIT_API_KEY = '798238e5-2961-4be7-a509-c64dcb24d4bc';
+const FACEIT_API_URL = 'https://open.faceit.com/data/v4';
 
 app.get('/api/getFaceitProfile/:nickname', async (req, res) => {
   const { nickname } = req.params;
@@ -56,7 +55,7 @@ app.get('/api/getFaceitProfile/:nickname', async (req, res) => {
   try {
     const response = await axios.get(`${FACEIT_API_URL}/players?nickname=${nickname}`, {
       headers: {
-        'Authorization': `Bearer ${FACEIT_API_KEY}`
+        Authorization: `Bearer ${FACEIT_API_KEY}`
       }
     });
     console.log('Response from FACEIT API:', response.data);
@@ -73,7 +72,7 @@ app.get('/api/getFaceitStats/:playerId', async (req, res) => {
   try {
     const response = await axios.get(`${FACEIT_API_URL}/players/${playerId}/stats/cs2`, {
       headers: {
-        'Authorization': `Bearer ${FACEIT_API_KEY}`
+        Authorization: `Bearer ${FACEIT_API_KEY}`
       }
     });
     console.log('Response from FACEIT API:', response.data);
@@ -89,7 +88,7 @@ app.get('/api/getFaceitMatches/:playerId', async (req, res) => {
   try {
     const response = await axios.get(`${FACEIT_API_URL}/players/${playerId}/history`, {
       headers: {
-        'Authorization': `Bearer ${FACEIT_API_KEY}`
+        Authorization: `Bearer ${FACEIT_API_KEY}`
       }
     });
 
@@ -125,4 +124,6 @@ app.get('/api/getFaceitMatches/:playerId', async (req, res) => {
   }
 });
 
-
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
