@@ -56,6 +56,61 @@ app.get('/api/getSummonerData/:puuid', async (req, res) => {
   }
 });
 
+//Endpoint for fetching specific summoner data by PUUID
+app.get('/api/getQueueStats/:puuid/:queueId', async (req, res) => {
+  const { puuid, queueId } = req.params;
+  try {
+    const response = await axios.get(`${SUMMONER_API_ROUTING_VAL}/lol/match/v5/matches/by-puuid/${puuid}/ids?queue=${queueId}`, {
+      headers: {
+        'X-Riot-Token': API_KEY
+      }
+    });
+    const matchIds = response.data;
+
+    let wins = 0;
+    let losses = 0;
+
+    for (const matchId of matchIds) {
+      const matchResponse = await axios.get(`${SUMMONER_API_ROUTING_VAL}/lol/match/v5/matches/${matchId}`, {
+        headers: {
+          'X-Riot-Token': API_KEY
+        }
+      });
+      const matchData = matchResponse.data;
+      const participant = matchData.info.participants.find(p => p.puuid === puuid);
+      if (participant) {
+        if (participant.win) {
+          wins++;
+        } else {
+          losses++;
+        }
+      }
+    }
+
+    res.json({ wins, losses });
+  } catch (error) {
+    console.error('Error fetching queue stats:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'Error fetching queue stats', details: error.response ? error.response.data : error.message });
+  }
+});
+
+// Endpoint for fetching stats
+app.get('/api/getRank/:summonerId', async (req, res) => {
+  const { summonerId } = req.params;
+  try {
+    console.log(`summonerId ${summonerId}`);
+    const response = await axios.get(`${SUMMONER_API_ROUTING_VAL}/lol/league/v4/entries/by-summoner/${summonerId}`, {
+      headers: {
+        'X-Riot-Token': API_KEY
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching rank data:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'Error fetching rank data', details: error.response ? error.response.data : error.message });
+  }
+});
+
 
 const FACEIT_API_KEY = '798238e5-2961-4be7-a509-c64dcb24d4bc';
 const FACEIT_API_URL = 'https://open.faceit.com/data/v4';
