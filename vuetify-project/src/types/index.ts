@@ -5,9 +5,10 @@ export interface LolAccountData {
     profileIconId: number;
     profileIconURL: string;
     matchHistory?: MatchDetails[];
-  }
+    stats: LolAccountStats[];
+  } 
 
-  /*export interface LolAccountStats {
+  export interface LolAccountStats {
     leagueId?: string;
     queueType: string;
     tier?: string;
@@ -21,7 +22,7 @@ export interface LolAccountData {
     inactive: boolean;
     miniSeries?: LolAccountPromo;
     winrate: number;
-  }*/
+  }
 
  export interface LolAccountPromo {
   losses: number;
