@@ -25,33 +25,33 @@
       <div v-if="view === 'stats'" class="statistics">
         <h3>Main statistics</h3>
         <div class="stat-grid">
-          <div class="stat-card">
+          <div class="stat-card" v-if="profile.lifetime && profile.lifetime['Average K/D Ratio']">
             <h4>K/D Ratio</h4>
             <p>{{ profile.lifetime['Average K/D Ratio'] }}</p>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" v-if="profile.lifetime && profile.lifetime['Win Rate %']">
             <h4>Win Rate %</h4>
             <p>{{ profile.lifetime['Win Rate %'] }}%</p>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" v-if="profile.lifetime && profile.lifetime.Matches">
             <h4>Matches</h4>
             <p>{{ profile.lifetime.Matches }}</p>
-            <p>Total Wins: {{ profile.lifetime.Wins }}</p>
-            <p>Total Losses: {{ profile.lifetime.Matches - profile.lifetime.Wins }}</p>
+            <p v-if="profile.lifetime.Wins">Total Wins: {{ profile.lifetime.Wins }}</p>
+            <p v-if="profile.lifetime.Wins">Total Losses: {{ profile.lifetime.Matches - profile.lifetime.Wins }}</p>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" v-if="profile.lifetime && profile.lifetime['Total Headshots %']">
             <h4>Total Headshots</h4>
             <p>{{ profile.lifetime['Total Headshots %'] }}</p>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" v-if="profile.lifetime && profile.lifetime['Longest Win Streak']">
             <h4>Longest Win Streak</h4>
             <p>{{ profile.lifetime['Longest Win Streak'] }}</p>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" v-if="profile.lifetime && profile.lifetime['Current Win Streak']">
             <h4>Current Win Streak</h4>
             <p>{{ profile.lifetime['Current Win Streak'] }}</p>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" v-if="profile.lifetime && profile.lifetime['Recent Results']">
             <h4>Recent Results</h4>
             <p v-html="formatRecentResults(profile.lifetime['Recent Results'])"></p>
           </div>
@@ -60,13 +60,15 @@
       <div v-if="view === 'matchHistory'" class="match-history">
         <h3>Match history</h3>
         <div v-for="match in matchHistory" :key="match.match_id" class="match-card">
-          <img :src="getMapImage(match.label)" alt="Map Image" class="map-image">
+          <div class="map-container">
+            <img :src="`/src/assets/maps/${match.map}.png`" alt="Map Image" class="map-image">
+            <p>{{ match.map }}</p>
+          </div>
           <div class="match-details">
-            <p :class="{'win': match.results === 'Win', 'loss': match.results === 'Loss'}">{{ match.results }}</p>
+            <p class="result" :class="{'win': match.results === 'Win', 'loss': match.results === 'Loss'}">{{ match.results }}</p>
             <p>K-A-D: {{ match.kills }}-{{ match.assists }}-{{ match.deaths }}</p>
             <p>Rating: {{ match.rating }}</p>
             <p>Date: {{ match.date }}</p>
-            <p>Elo Point: {{ match.elo }}</p>
           </div>
         </div>
       </div>
@@ -108,7 +110,8 @@ interface Match {
   rating: number;
   date: string;
   elo: number;
-  label: string;
+  map: string;
+  img_small: string;
 }
 
 export default defineComponent({
@@ -118,26 +121,25 @@ export default defineComponent({
       nickname: '',
       profile: null as Profile | null,
       matchHistory: [] as Match[],
-      view: 'stats' 
+      view: 'stats'
     };
   },
   methods: {
+    setView(view: string) {
+      this.view = view;
+    },
     async searchProfile() {
-      console.log('Search button clicked');
       try {
-        console.log(`Fetching profile for nickname: ${this.nickname}`);
         this.profile = await getFaceitProfile(this.nickname);
-        console.log('Profile fetched:', this.profile);
+        console.log('Profile:', this.profile);  // Přidaný výstup
         if (this.profile) {
-          console.log(`Fetching stats for player ID: ${this.profile.player_id}`);
           const stats = await getFaceitStats(this.profile.player_id);
-          console.log('Stats fetched:', stats);
           this.profile = { ...this.profile, ...stats };
+          console.log('Updated Profile with Stats:', this.profile);  // Přidaný výstup
           if (this.view === 'matchHistory') {
-            console.log(`Fetching match history for player ID: ${this.profile.player_id}`);
             const matchHistory = await getFaceitMatchHistory(this.profile.player_id);
-            console.log('Match history fetched:', matchHistory);
             this.matchHistory = matchHistory;
+            console.log('Match history:', this.matchHistory);  // Přidaný výstup
           }
         }
       } catch (error) {
@@ -148,10 +150,9 @@ export default defineComponent({
       this.view = 'matchHistory';
       if (this.profile) {
         try {
-          console.log(`Fetching match history for player ID: ${this.profile.player_id}`);
           const matchHistory = await getFaceitMatchHistory(this.profile.player_id);
-          console.log('Match history fetched:', matchHistory);
           this.matchHistory = matchHistory;
+          console.log('Match history:', this.matchHistory);  // Přidaný výstup
         } catch (error) {
           console.error('Error fetching match history:', error);
         }
@@ -163,20 +164,25 @@ export default defineComponent({
     showElo() {
       this.view = 'elo';
     },
-    getMapImage(label: string) {
-      const mapImages: { [key: string]: string } = {
-        Anubis: 'Anubis.png',
-        Nuke: 'Nuke.png',
-        Overpass: 'Overpass.png',
-        Mirage: 'Mirage.png',
-        Ancient: 'Ancient.png',
-      };
-      return require(`@/assets/maps/${mapImages[label]}`);
-    },
     formatRecentResults(results: number[]) {
       return results
-        .map(result => (result === '1' ? '<span style="color: green;">W</span>' : '<span style="color: red;">L</span>'))
+        .map(result => (result === 1 ? '<span style="color: green;">W</span>' : '<span style="color: red;">L</span>'))
         .join(' ');
+    },
+    logMapSrc(map: string) {
+      console.log('Map:', map);
+    }
+  },
+  mounted() {
+    this.matchHistory.forEach(match => {
+      this.logMapSrc(match.map);
+    });
+  },
+  watch: {
+    matchHistory(newMatchHistory) {
+      newMatchHistory.forEach(match => {
+        this.logMapSrc(match.map);
+      });
     }
   }
 });
@@ -293,26 +299,30 @@ button:hover {
   padding: 20px;
   border-radius: 10px;
   text-align: left;
+  display: flex;
+  align-items: center;
 }
 
-.stat-card h4, .match-card h4 {
+.match-card {
+  gap: 20px;
+  border: 1px solid #444;
   margin-bottom: 10px;
 }
 
-.stat-card p, .match-card p {
-  font-size: 16px;
-  margin: 5px 0;
-}
-
-.map-image {
+.match-card .map-image {
   width: 100px;
-  height: auto;
+  height: 60px;
+  border-radius: 5px;
 }
 
 .match-details {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+}
+
+.result {
+  font-size: 18px;
+  font-weight: bold;
 }
 
 .win {

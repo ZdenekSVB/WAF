@@ -112,7 +112,7 @@ app.get('/api/getRank/:summonerId', async (req, res) => {
 });
 
 
-const FACEIT_API_KEY = '798238e5-2961-4be7-a509-c64dcb24d4bc';
+const FACEIT_API_KEY = '70e13787-dfaa-4e89-8e92-fde2a100d028';
 const FACEIT_API_URL = 'https://open.faceit.com/data/v4';
 
 app.get('/api/getFaceitProfile/:nickname', async (req, res) => {
@@ -152,36 +152,23 @@ app.get('/api/getFaceitStats/:playerId', async (req, res) => {
 app.get('/api/getFaceitMatches/:playerId', async (req, res) => {
   const { playerId } = req.params;
   try {
-    const response = await axios.get(`${FACEIT_API_URL}/players/${playerId}/history`, {
+    const response = await axios.get(`${FACEIT_API_URL}/players/${playerId}/games/cs2/stats?offset=0&limit=10`, {
       headers: {
         Authorization: `Bearer ${FACEIT_API_KEY}`
       }
     });
 
-    const matches = response.data.items.slice(0, 10).map(item => {
-      let playerStats = null;
-
-      for (const teamId in item.teams) {
-        const team = item.teams[teamId];
-        const player = team.players.find(p => p.player_id === playerId);
-        if (player) {
-          playerStats = player.player_stats;
-          break;
-        }
-      }
-
-      return {
-        match_id: item.match_id,
-        results: playerStats && item.results.winner === playerStats.team_id ? 'Win' : 'Loss',
-        kills: playerStats.kills,
-        assists: playerStats.assists,
-        deaths: playerStats.deaths,
-        rating: playerStats.rating,
-        date: new Date(item.finished_at * 1000).toLocaleDateString(),
-        elo: playerStats.elo,
-        label: item.label || 'Unknown'
-      };
-    });
+    const matches = response.data.items.map(item => ({
+      match_id: item.stats['Match Id'],
+      results: item.stats['Result'] === '1' ? 'Win' : 'Loss',
+      kills: item.stats['Kills'],
+      assists: item.stats['Assists'],
+      deaths: item.stats['Deaths'],
+      rating: item.stats['K/D Ratio'],
+      date: new Date(item.stats['Created At']).toLocaleDateString(),
+      elo: item.stats['Elo'],
+      map: item.stats['Map']
+    }));
 
     res.json(matches);
   } catch (error) {
