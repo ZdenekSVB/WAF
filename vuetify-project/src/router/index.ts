@@ -2,8 +2,10 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 
 import HomeView from '../pages/HomeView.vue';
 
-//VALORANT
-import Valorant from '../pages/ValorantView.vue';
+//DOTA
+import DOTA from '@/pages/DOTA/SearchView.vue';
+import DOTAaccountView from '../pages/DOTA/AccountView.vue';
+
 //CSGO
 import Csgo from '../pages/CS/CSView.vue';
 //TFT
@@ -22,13 +24,13 @@ const routes: Array<RouteRecordRaw> = [
     name: 'home',
     component: HomeView,
   },
-//VALORANT
+//DOTA
   {
     path: '/valorant',
     name: 'valorant',
-    component: Valorant,
+    component: DOTA,
   },
-//CSGO
+  { path: '/account-view/:accountId', name: 'AccountView', component: DOTAaccountView, props: true },//CSGO
   {
     path: '/counter-strike',
     name: 'counter-strike',
