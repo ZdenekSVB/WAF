@@ -159,6 +159,7 @@ button:hover {
 
 .statistics, .match-history {
   margin-top: 20px;
+  padding: 20px;
 }
 
 .stat-grid, .match-grid {
@@ -168,7 +169,7 @@ button:hover {
 }
 
 .stat-card, .match-card {
-  background: #1f1f1f;
+  background: #464646;
   color: white;
   padding: 20px;
   border-radius: 10px;
