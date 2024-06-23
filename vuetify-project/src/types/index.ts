@@ -1,10 +1,9 @@
 export interface LolAccountData {
-    summonerId: string;
     name: string;
     summonerLevel: number;
     profileIconId: number;
     profileIconURL: string;
-    stats: LolAccountStats[];
+    stats: LolAccountStats[]
   }
 
   export interface LolAccountStats {

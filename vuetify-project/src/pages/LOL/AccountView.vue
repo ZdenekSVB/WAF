@@ -3,7 +3,6 @@
     <AppBar />
     <v-main>
       <v-container>
-
         <v-row>
           <v-col cols="12" md="4">
             <v-card>
@@ -21,7 +20,7 @@
                 </div>
               </v-card-text>
             </v-card>
-          </v-col>   
+          </v-col>
           <v-col cols="12" md="4">
             <v-card>
               <v-card-title>Search</v-card-title>
@@ -38,37 +37,16 @@
             </v-card>
           </v-col>
         </v-row>
-
-        <v-row>
-          <v-col cols="12" md="6" v-for="stat in userInfo.stats" :key="stat.queueType">
-            <v-card>
-              <v-card-title>{{ stat.queueType }}</v-card-title>
-              <v-card-text>
-                <div>
-                  <div><strong>Tier:</strong> {{ stat.tier }}</div>
-                  <div><strong>Rank:</strong> {{ stat.rank }}</div>
-                  <div><strong>LP:</strong> {{ stat.leaguePoints }}</div>
-                  <div><strong>Wins:</strong> {{ stat.wins }}</div>
-                  <div><strong>Losses:</strong> {{ stat.losses }}</div>
-                  <div><strong>Winrate:</strong> {{ stat.winrate }}%</div>
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-
       </v-container>
     </v-main>
     <router-view />
   </v-app>
 </template>
-
 <script lang="ts">
 import { defineComponent, computed } from 'vue';
 import { useLolStore } from '@/stores/lolStore';
 import { fetchUserData } from '@/pages/LOL/lolService';
 import AppBar from '@/components/AppBar.vue';
-
 export default defineComponent({
   name: 'LOLAccountView',
   components: {
@@ -101,14 +79,12 @@ export default defineComponent({
         console.log(`Received profileIconID: ${userData.profileIconId}`);
         console.log(`Received profileIconURL: ${userData.profileIconURL}`);
         console.log(`Received level: ${userData.summonerLevel}`);
-        
         this.lolStore.setUserData(userData);
       }
     }
   }
 });
 </script>
-
 <style scoped>
 .header-cell,
 .content-cell {
@@ -116,7 +92,6 @@ export default defineComponent({
   text-align: center;
   border-bottom: 1px solid #eee;
 }
-
 .header-row {  
   font-weight: bold;
 }
