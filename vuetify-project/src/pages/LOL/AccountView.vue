@@ -3,7 +3,6 @@
     <AppBar />
     <v-main>
       <v-container>
-
         <v-row>
           <v-col cols="12" md="4">
             <v-card>
@@ -21,7 +20,7 @@
                 </div>
               </v-card-text>
             </v-card>
-          </v-col>   
+          </v-col>
           <v-col cols="12" md="4">
             <v-card>
               <v-card-title>Search</v-card-title>
@@ -38,25 +37,37 @@
             </v-card>
           </v-col>
         </v-row>
-
         <v-row>
-          <v-col cols="12" md="6" v-for="stat in userInfo.stats" :key="stat.queueType">
+          <v-col cols="12">
             <v-card>
-              <v-card-title>{{ stat.queueType }}</v-card-title>
+              <v-card-title>Match History</v-card-title>
               <v-card-text>
-                <div>
-                  <div><strong>Tier:</strong> {{ stat.tier }}</div>
-                  <div><strong>Rank:</strong> {{ stat.rank }}</div>
-                  <div><strong>LP:</strong> {{ stat.leaguePoints }}</div>
-                  <div><strong>Wins:</strong> {{ stat.wins }}</div>
-                  <div><strong>Losses:</strong> {{ stat.losses }}</div>
-                  <div><strong>Winrate:</strong> {{ stat.winrate }}%</div>
-                </div>
+                <v-row>
+                  <v-col cols="12">
+                    <v-progress-circular v-if="loading" indeterminate color="primary"></v-progress-circular>
+                    <div v-else>
+                      <v-row v-for="(match, index) in userInfo.matchHistory" :key="index">
+                        <v-col cols="12">
+                          <v-card :class="match.win ? 'win-match' : 'loss-match'">
+                            <v-card-text>
+                              <div class="match-details">
+                                <strong>Match ID:</strong> {{ match.matchId }} <br>
+                                <strong>Date:</strong> {{ match.date }} <br>
+                                <strong>Champion:</strong> {{ match.champion }} <br>
+                                <strong>Role:</strong> {{ match.role }} <br>
+                                <strong>K/D/A:</strong> {{ match.kills }} / {{ match.deaths }} / {{ match.assists }} <br>
+                              </div>
+                            </v-card-text>
+                          </v-card>
+                        </v-col>
+                      </v-row>
+                    </div>
+                  </v-col>
+                </v-row>
               </v-card-text>
             </v-card>
           </v-col>
         </v-row>
-
       </v-container>
     </v-main>
     <router-view />
@@ -76,7 +87,8 @@ export default defineComponent({
   },
   data() {
     return {
-      searchQuery: ''
+      searchQuery: '',
+      loading: false
     };
   },
   setup() {
@@ -95,13 +107,14 @@ export default defineComponent({
         alert('Please enter the full Riot ID in the format: name#tag');
         return;
       }
+      this.loading = true;
       const userData = await fetchUserData(gameName, tagLine);
+      this.loading = false;
       if (userData) {
         console.log(`Received nickname: ${userData.name}`);
         console.log(`Received profileIconID: ${userData.profileIconId}`);
         console.log(`Received profileIconURL: ${userData.profileIconURL}`);
         console.log(`Received level: ${userData.summonerLevel}`);
-        
         this.lolStore.setUserData(userData);
       }
     }
@@ -110,13 +123,21 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.win-match {
+  background-color: skyblue;
+}
+.loss-match {
+  background-color: lightcoral;
+}
+.match-details {
+  color: black;
+}
 .header-cell,
 .content-cell {
   padding: 10px;
   text-align: center;
   border-bottom: 1px solid #eee;
 }
-
 .header-row {  
   font-weight: bold;
 }
