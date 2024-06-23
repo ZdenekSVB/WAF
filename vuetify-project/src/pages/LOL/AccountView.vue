@@ -37,16 +37,40 @@
             </v-card>
           </v-col>
         </v-row>
+        <v-row>
+          <v-col cols="12">
+            <v-card>
+              <v-card-title>Match History</v-card-title>
+            </v-card>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12" v-for="(match, index) in userInfo.matchHistory" :key="index">
+            <v-card :class="{'win-match': match.win, 'loss-match': !match.win}">
+              <v-card-text>
+                <div class="match-details">
+                  <strong>Match ID:</strong> {{ match.matchId }} <br>
+                  <strong>Date:</strong> {{ match.date }} <br>
+                  <strong>Champion:</strong> {{ match.champion }} <br>
+                  <strong>Role:</strong> {{ match.role }} <br>
+                  <strong>K/D/A:</strong> {{ match.kills }} / {{ match.deaths }} / {{ match.assists }} <br>
+                </div>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
       </v-container>
     </v-main>
     <router-view />
   </v-app>
 </template>
+
 <script lang="ts">
 import { defineComponent, computed } from 'vue';
 import { useLolStore } from '@/stores/lolStore';
 import { fetchUserData } from '@/pages/LOL/lolService';
 import AppBar from '@/components/AppBar.vue';
+
 export default defineComponent({
   name: 'LOLAccountView',
   components: {
@@ -85,7 +109,17 @@ export default defineComponent({
   }
 });
 </script>
+
 <style scoped>
+.win-match {
+  background-color: skyblue;
+}
+.loss-match {
+  background-color: lightcoral;
+}
+.match-details {
+  color: black;
+}
 .header-cell,
 .content-cell {
   padding: 10px;
