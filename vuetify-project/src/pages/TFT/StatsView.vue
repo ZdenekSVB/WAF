@@ -5,14 +5,14 @@
       <v-container>
         <v-row>
           <v-col cols="12" md="4">
-            <v-card>
+            <v-card class="text-center">
               <v-card-title>Profile Picture</v-card-title>
               <v-img :src="profileIconUrl" aspect-ratio="1"></v-img>
             </v-card>
           </v-col>
 
           <v-col cols="12" md="4">
-            <v-card>
+            <v-card class="text-center">
               <v-card-title>User Info</v-card-title>
               <v-card-text>
                 <div>
@@ -22,7 +22,7 @@
                 </div>
               </v-card-text>
             </v-card>
-            <v-card>
+            <v-card class="text-center">
               <v-card-title>League Info</v-card-title>
               <v-card-text>
                 <div v-for="(league, index) in userInfo.leagueData" :key="index">
@@ -39,7 +39,7 @@
           </v-col>
 
           <v-col cols="12" md="4">
-            <v-card>
+            <v-card class="text-center">
               <v-card-title>Search</v-card-title>
               <v-card-text>
                 <v-text-field
@@ -52,33 +52,38 @@
                 ></v-text-field>
               </v-card-text>
             </v-card>
-            <v-card>
+            <v-card class="text-center">
               <v-card-title>Graph</v-card-title>
               <v-card-text>
-                <div class="graph-placeholder">
-                  Graph Placeholder
-                </div>
+                <canvas ref="winLossGraph" class="graph-placeholder"></canvas>
               </v-card-text>
             </v-card>
           </v-col>
         </v-row>
 
-        <v-row class="recent-games-table">
+        <v-row class="recent-games-table text-center">
           <v-col cols="12">
             <v-card>
               <v-card-title>Recent Games</v-card-title>
               <v-card-text>
                 <v-row class="header-row">
-                  <v-col v-for="(header, index) in recentGamesHeaders" :key="index" cols="2">
+                  <v-col v-for="(header, index) in recentGamesHeaders" :key="index" cols="1.5">
                     <div class="header-cell">
                       {{ header }}
                     </div>
                   </v-col>
                 </v-row>
                 <v-row v-for="(row, rowIndex) in recentGamesData" :key="rowIndex">
-                  <v-col v-for="(content, colIndex) in row" :key="colIndex" cols="2">
+                  <v-col v-for="(content, colIndex) in row" :key="colIndex" cols="1.5">
                     <div class="content-cell">
-                      {{ content }}
+                      <div v-if="Array.isArray(content)">
+                        <div v-for="(augment, i) in content" :key="i" class="augment">
+                          <div>{{ formatAugment(augment) }}</div>
+                        </div>
+                      </div>
+                      <div v-else>
+                        {{ content }}
+                      </div>
                     </div>
                   </v-col>
                 </v-row>
@@ -95,7 +100,10 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import axios from 'axios';
+import { Chart, registerables } from 'chart.js';
 import AppBar from '@/components/AppBar.vue';
+
+Chart.register(...registerables);
 
 export default defineComponent({
   name: 'StatsView',
@@ -112,14 +120,8 @@ export default defineComponent({
         tagLine: '',
         leagueData: []
       },
-      statsHeaders: ['Synergy', 'Matches', 'Avg Place'],
-      statsData: [
-        ['Data 1', 'Data 2', 'Data 3'],
-      ],
-      recentGamesHeaders: ['Place', 'Stage', 'Synergy', 'Augment', 'Champs', 'Gold/Kills/DMG'],
-      recentGamesData: [
-        ['Data 1', 'Data 2', 'Data 3', 'Data 4', 'Data 5', 'Data 6'],
-      ]
+      recentGamesHeaders: ['Game Number', 'Gold Left', 'Level', 'Placement', 'Players Eliminated', 'Total Damage', 'Augments'],
+      recentGamesData: []
     };
   },
   methods: {
@@ -134,39 +136,97 @@ export default defineComponent({
         this.userInfo.tagLine = response.data.tagLine;
         this.userInfo.leagueData = response.data.leagueData;
         this.profileIconUrl = `http://ddragon.leagueoflegends.com/cdn/11.24.1/img/profileicon/${response.data.profileIconId}.png`;
+        
+        // Processing recent games
+        this.recentGamesData = response.data.matchDetails.map((match, index) => {
+          const participant = match.matchDetails.info.participants.find(p => p.puuid === response.data.puuid);
+          if (participant) {
+            return [
+              index + 1,
+              participant.gold_left,
+              participant.level,
+              participant.placement,
+              participant.players_eliminated,
+              participant.total_damage_to_players,
+              participant.augments // Only include augment names
+            ];
+          } else {
+            console.error('Participant not found for current user in match:', match.matchId);
+            return [];
+          }
+        });
+
+        // Render win/loss graph
+        this.renderWinLossGraph();
       } catch (error) {
         console.error('Error fetching player data:', error);
       }
+    },
+    formatAugment(augment) {
+      const parts = augment.split('_');
+      const lastPart = parts[parts.length - 1];
+      const formatted = lastPart.replace(/([A-Z])/g, ' $1').trim();
+      return formatted;
+    },
+    renderWinLossGraph() {
+      const ctx = (this.$refs.winLossGraph as HTMLCanvasElement).getContext('2d');
+      const winLossData = this.userInfo.leagueData.reduce(
+        (acc, league) => {
+          acc.wins += league.wins;
+          acc.losses += league.losses;
+          return acc;
+        },
+        { wins: 0, losses: 0 }
+      );
+
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Wins', 'Losses'],
+          datasets: [
+            {
+              label: 'Win/Loss Ratio',
+              data: [winLossData.wins, winLossData.losses],
+              backgroundColor: ['#4caf50', '#f44336'],
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              enabled: true,
+            }
+          }
+        }
+      });
     }
   }
-})
+});
 </script>
 
 <style scoped>
-.info-placeholder,
-.graph-placeholder {
-  color: black;
-  height: 150px;
-  margin-bottom: 10px;
-  background-color: #eee;
-}
-
-.header-cell,
-.content-cell {
-  padding: 10px;
+.text-center {
   text-align: center;
-  border-bottom: 1px solid #eee;
 }
 
-.header-row {  
+.header-cell {
   font-weight: bold;
 }
 
-.stats-table {
-  margin-bottom: 20px;
+.content-cell {
+  padding: 8px;
 }
 
-.recent-games-table {
-  margin-top: 20px;
+.graph-placeholder {
+  height: 400px;
+}
+
+.recent-games-table .v-card {
+  width: 1200px; /* Increase the width of the table */
 }
 </style>
