@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <AppBar />
+    <AppBar :currentCategory="'TFT'" />
     <div class="background"></div>
     <div class="search-field">
       <v-text-field

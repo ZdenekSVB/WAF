@@ -1,7 +1,7 @@
 <template>
   <v-app-bar app>
     <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-    <v-btn v-for="(item, index) in menuItems" :key="index" @click="changeActiveSite(index)" variant="text">
+    <v-btn v-for="(item, index) in menuItems[currentCategory]" :key="index" @click="changeActiveSite(index)" variant="text">
       <span :class="{'active': activeItem === index}">{{ item }}</span>
     </v-btn>
   </v-app-bar>
@@ -21,23 +21,49 @@ import { useRoute, useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'AppBar',
+  props: {
+    currentCategory: {
+      type: String,
+      required: true
+    }
+  },
   data() {
     return {
       drawer: false,
       activeItem: 0,
-      menuItems: ['Team Fight Tactics', 'Stats', 'Buffs/Nerfs', 'Ranking'],
-      drawerItems: ['Hlavní stránka', 'TFT', 'CSGO', 'LOL', 'Valorant'],
-      searchQuery: ''
+      menuItems: {
+        TFT: ['Team Fight Tactics', 'Stats', 'Buffs/Nerfs', 'Ranking'],
+        CS: ['CS'],
+        LOL: ['LOL'],
+        DOTA: ['DOTA']
+      },
+      drawerItems: ['Hlavní stránka', 'TFT', 'CSGO', 'LOL', 'Valorant']
     };
   },
   methods: {
     navigateTo(index: number) {
-      const routes = ['/', '/tft/search', '/counter-strike', '/league-of-legends', '/valorant'];
+      const routes = ['/', '/tft/search', '/counter-strike', '/lol/search', '/valorant'];
       this.$router.push(routes[index]);
     },
     changeActiveSite(index: number) {
       this.activeItem = index;
-      const routes = ['/tft/search', '/tft/stats', '/tft/buffs-nerfs', '/tft/ranking'];
+      let routes = [];
+      switch (this.currentCategory) {
+        case 'TFT':
+          routes = ['/tft/search', '/tft/stats', '/tft/buffs-nerfs', '/tft/ranking'];
+          break;
+        case 'CS':
+          routes = ['/account-view/:accountId', '/counter-strike'];
+          break;
+        case 'LOL':
+          routes = ['/lol/search', '/lol/account'];
+          break;
+        case 'DOTA':
+          routes = ['/valorant'];
+          break;
+        default:
+          routes = [];
+      }
       this.$router.push(routes[index]);
     }
   },
@@ -45,7 +71,23 @@ export default defineComponent({
     // Set activeItem based on current route on component mount
     const route = useRoute();
     const currentPath = route.path;
-    const index = ['/tft/search', '/tft/stats', '/tft/buffs-nerfs', '/tft/ranking'].indexOf(currentPath);
+    let index = -1;
+    switch (this.currentCategory) {
+      case 'TFT':
+        index = ['/tft/search', '/tft/stats', '/tft/buffs-nerfs', '/tft/ranking'].indexOf(currentPath);
+        break;
+      case 'CS':
+        index = ['/account-view/:accountId', '/counter-strike'].indexOf(currentPath);
+        break;
+      case 'LOL':
+        index = ['/lol/search', '/lol/account'].indexOf(currentPath);
+        break;
+      case 'DOTA':
+        index = ['/valorant'].indexOf(currentPath);
+        break;
+      default:
+        index = -1;
+    }
     if (index !== -1) {
       this.activeItem = index;
     }
