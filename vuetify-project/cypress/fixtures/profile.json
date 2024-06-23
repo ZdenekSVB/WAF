@@ -1,3 +1,10 @@
 {
-  "nickname": "kenix--"
+  "player_id": "123456",
+  "nickname": "testPlayer",
+  "avatar": "https://example.com/avatar.png",
+  "games": {
+    "cs2": {
+      "faceit_elo": 1500
+    }
+  }
 }

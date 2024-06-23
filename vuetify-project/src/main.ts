@@ -16,6 +16,8 @@ import { createApp } from 'vue'
 // Import the router
 import router from './router'
 
+import { createPinia } from 'pinia';
+
 const app = createApp(App)
 
 // Register plugins
@@ -29,6 +31,8 @@ router.beforeEach((to, from, next) => {
 
 // Use the router
 app.use(router)
+
+app.use(createPinia());
 
 // Mount the app
 app.mount('#app')
