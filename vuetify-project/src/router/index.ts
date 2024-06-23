@@ -5,6 +5,10 @@ import HomeView from '../pages/HomeView.vue';
 //DOTA
 import DOTA from '@/pages/DOTA/SearchView.vue';
 import DOTAaccountView from '../pages/DOTA/AccountView.vue';
+import DOTAmatchesView from '../pages/DOTA/MatchesView.vue';
+import DOTArankingsView from '../pages/DOTA/RankingsView.vue';
+import DOTAheroesView from '../pages/DOTA/HeroesView.vue';
+import DOTAmatchDetailView from '../pages/DOTA/MatchDetail.vue';
 
 //CSGO
 import Csgo from '../pages/CS/CSView.vue';
@@ -30,7 +34,25 @@ const routes: Array<RouteRecordRaw> = [
     name: 'valorant',
     component: DOTA,
   },
-  { path: '/account-view/:accountId', name: 'AccountView', component: DOTAaccountView, props: true },//CSGO
+  {
+    path: '/match/:matchId',
+    name: 'MatchDetail',
+    component: DOTAmatchDetailView,
+    props: true
+  },
+  {
+    path: '/heroes',
+    name: 'HeroStats',
+    component: DOTAheroesView
+  },
+  { path: '/account-view/:accountId', name: 'AccountView', component: DOTAaccountView, props: true },
+  { path: '/account-view/:accountId/matches', name: 'MatchesView', component: DOTAmatchesView },
+  { path: '/account-view/:accountId/rankings', name: 'RankingsView', component: DOTArankingsView },
+  { path: '/account-view/:accountId/heroes', name: 'HeroesView', component: DOTAheroesView },
+
+  //CSGO
+
+  { path: '/account-view/:accountId', name: 'AccountView', component: DOTAaccountView, props: true },
   {
     path: '/counter-strike',
     name: 'counter-strike',

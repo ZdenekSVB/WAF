@@ -1,32 +1,71 @@
 <template>
-  <div class="cs-view">
-    <header>
-      <img src="@/assets/FACEITLogo.png" alt="FACEIT Logo" class="logo">
-      <nav v-if="profile">
-        <a @click.prevent="setView('stats')" :class="{ disabled: view === 'stats' }">Stats</a>
-        <a @click.prevent="setView('matchHistory')" :class="{ disabled: view === 'matchHistory' }">Match history</a>
-        <a @click.prevent="setView('elo')" :class="{ disabled: view === 'elo' }">ELO</a>
-      </nav>
-    </header>
-    <div class="search-section">
-      <div class="search-container">
-        <input v-model="nickname" placeholder="Search player's profile" />
-        <button @click="searchProfile">Search</button>
-      </div>
-    </div>
-    <div v-if="profile" class="profile-section">
-      <div class="profile-header">
-        <img :src="profile.avatar" alt="Player Avatar" class="avatar">
-        <div>
-          <h2>{{ profile.nickname }}</h2>
-          <p v-if="profile.games && profile.games.cs2">ELO: <span>{{ profile.games.cs2.faceit_elo }}</span></p>
-        </div>
-      </div>
-      <StatsView v-if="view === 'stats'" :profile="profile" />
-      <MatchHistoryView v-if="view === 'matchHistory'" :profile="profile" :matchHistory="matchHistory" />
-      <EloView v-if="view === 'elo'" :profile="profile" />
-    </div>
-  </div>
+  <v-app class="app-background">
+    <v-navigation-drawer v-model="isMenuOpen" app>
+      <v-list>
+        <v-list-item @click="navigateTo(0)">
+          <v-list-item-title>Main Page</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="navigateTo(1)">
+          <v-list-item-title>TFT</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="navigateTo(2)">
+          <v-list-item-title>CS2</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="navigateTo(3)">
+          <v-list-item-title>LOL</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="navigateTo(4)">
+          <v-list-item-title>Valorant</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
+    <v-app-bar app>
+      <v-toolbar-title>
+        <v-icon @click="toggleMenu">mdi-menu</v-icon>
+        <img src="@/assets/FACEITLogo.png" alt="FACEIT Logo" class="logo">
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-tabs v-if="profile" v-model="view" centered>
+        <v-tab :key="'stats'" @click="setView('stats')">Stats</v-tab>
+        <v-tab :key="'matchHistory'" @click="setView('matchHistory')">Match history</v-tab>
+        <v-tab :key="'elo'" @click="setView('elo')">ELO</v-tab>
+      </v-tabs>
+    </v-app-bar>
+
+    <v-main>
+      <v-container>
+        <v-row class="search-section" justify="center">
+          <v-col cols="12" md="8">
+            <v-card>
+              <v-card-title>
+                <v-text-field v-model="nickname" label="Search player's profile" outlined></v-text-field>
+                <v-btn @click="searchProfile" color="primary">Search</v-btn>
+              </v-card-title>
+              <v-alert v-if="errorMessage" type="error">{{ errorMessage }}</v-alert>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <v-row v-if="profile" class="profile-section" justify="center">
+          <v-col cols="12" md="8">
+            <v-card>
+              <v-card-title>
+                <v-img :src="profile.avatar" alt="Player Avatar" contain class="avatar-img"></v-img>
+                <div>
+                  <h2>{{ profile.nickname }}</h2>
+                  <p v-if="profile.games && profile.games.cs2">ELO: <span>{{ profile.games.cs2.faceit_elo }}</span></p>
+                </div>
+              </v-card-title>
+              <StatsView v-if="view === 'stats'" :profile="profile" />
+              <MatchHistoryView v-if="view === 'matchHistory'" :profile="profile" :matchHistory="matchHistory" />
+              <EloView v-if="view === 'elo'" :profile="profile" />
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <script lang="ts">
@@ -44,7 +83,9 @@ export default defineComponent({
       nickname: '',
       profile: null as Profile | null,
       matchHistory: [] as Match[],
-      view: 'stats'
+      view: 'stats',
+      isMenuOpen: false,
+      errorMessage: ''
     };
   },
   methods: {
@@ -60,6 +101,7 @@ export default defineComponent({
     },
     async searchProfile() {
       try {
+        this.errorMessage = '';
         this.profile = await getFaceitProfile(this.nickname);
         console.log('Profile:', this.profile);
         if (this.profile) {
@@ -70,6 +112,7 @@ export default defineComponent({
         }
       } catch (error) {
         console.error('Error fetching profile or stats:', error);
+        this.errorMessage = 'Player not found. Please check the nickname and try again.';
       }
     },
     async showMatchHistory() {
@@ -82,160 +125,46 @@ export default defineComponent({
           console.error('Error fetching match history:', error);
         }
       }
+    },
+    toggleMenu() {
+      this.isMenuOpen = !this.isMenuOpen;
+    },
+    navigateTo(index: number) {
+      const routes = ['/', '/tft/search', '/counter-strike', '/league-of-legends', '/valorant'];
+      this.$router.push(routes[index]);
     }
   }
 });
 </script>
 
-
 <style scoped>
-.cs-view {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: url('@/assets/counter-strike.png') no-repeat center center;
-  background-size: cover;
-  height: 100vh;
-  overflow-y: auto;
-}
 
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.5);
-}
 
 .logo {
   height: 50px;
-}
-
-nav {
-  display: flex;
-  gap: 20px;
-}
-
-nav a {
-  color: white;
-  text-decoration: none;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-nav a.disabled {
-  pointer-events: none;
-  color: gray;
+  margin-left: 10px;
 }
 
 .search-section {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-grow: 1;
   margin-top: 20px;
-}
-
-.search-container {
-  display: flex;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 10px;
-  border-radius: 5px;
-}
-
-input {
-  padding: 10px;
-  border: none;
-  border-radius: 5px 0 0 5px;
-  outline: none;
-  font-size: 16px;
-}
-
-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 0 5px 5px 0;
-  background: orange;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  outline: none;
-}
-
-button:hover {
-  background: darkorange;
 }
 
 .profile-section {
-  background: rgba(0, 0, 0, 0.8);
-  padding: 20px;
-  border-radius: 10px;
   margin-top: 20px;
-  width: 90%;
 }
 
-.profile-header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.avatar {
+.avatar-img {
   width: 100px;
   height: 100px;
   border-radius: 50%;
+  object-fit: cover;
+  margin-right: 20px;
 }
 
-.statistics, .match-history {
-  margin-top: 20px;
-}
-
-.stat-grid, .match-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.stat-card, .match-card {
-  background: #1f1f1f;
-  color: white;
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.match-card {
-  gap: 20px;
-  border: 1px solid #444;
-  margin-bottom: 10px;
-}
-
-.match-card .map-image {
-  width: 100px;
-  height: 60px;
-  border-radius: 5px;
-}
-
-.match-details {
-  display: flex;
-  flex-direction: column;
-}
-
-.result {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.win {
-  color: green;
-}
-
-.loss {
-  color: red;
+@media (max-width: 600px) {
+  .logo {
+    height: 30px;
+    width: auto;
+  }
 }
 </style>
