@@ -2,10 +2,10 @@
   <div class="cs-view">
     <header>
       <img src="@/assets/FACEITLogo.png" alt="FACEIT Logo" class="logo">
-      <nav>
-        <a @click.prevent="setView('stats')">Stats</a>
-        <a @click.prevent="setView('matchHistory')">Match history</a>
-        <a @click.prevent="setView('elo')">ELO</a>
+      <nav v-if="profile">
+        <a @click.prevent="setView('stats')" :class="{ disabled: view === 'stats' }">Stats</a>
+        <a @click.prevent="setView('matchHistory')" :class="{ disabled: view === 'matchHistory' }">Match history</a>
+        <a @click.prevent="setView('elo')" :class="{ disabled: view === 'elo' }">ELO</a>
       </nav>
     </header>
     <div class="search-section">
@@ -35,7 +35,7 @@
           </div>
           <div class="stat-card" v-if="profile.lifetime && profile.lifetime.Matches">
             <h4>Matches</h4>
-            <p>{{ profile.lifetime.Matches }}</p>
+            <p>Total Matches: {{ profile.lifetime.Matches }}</p>
             <p v-if="profile.lifetime.Wins">Total Wins: {{ profile.lifetime.Wins }}</p>
             <p v-if="profile.lifetime.Wins">Total Losses: {{ profile.lifetime.Matches - profile.lifetime.Wins }}</p>
           </div>
@@ -94,7 +94,7 @@ interface Profile {
     'Current Win Streak'?: number;
     'Longest Win Streak'?: number;
     'Total Headshots %'?: number;
-    'Recent Results'?: number[];
+    'Recent Results'?: string[];
     'Average K/D Ratio'?: number;
     'Win Rate %'?: number;
     Wins?: number;
@@ -127,32 +127,30 @@ export default defineComponent({
   methods: {
     setView(view: string) {
       this.view = view;
+      if (view === 'matchHistory' && this.profile) {
+        this.showMatchHistory();
+      }
     },
     async searchProfile() {
       try {
         this.profile = await getFaceitProfile(this.nickname);
-        console.log('Profile:', this.profile);  // Přidaný výstup
+        console.log('Profile:', this.profile);
         if (this.profile) {
           const stats = await getFaceitStats(this.profile.player_id);
           this.profile = { ...this.profile, ...stats };
-          console.log('Updated Profile with Stats:', this.profile);  // Přidaný výstup
-          if (this.view === 'matchHistory') {
-            const matchHistory = await getFaceitMatchHistory(this.profile.player_id);
-            this.matchHistory = matchHistory;
-            console.log('Match history:', this.matchHistory);  // Přidaný výstup
-          }
+          console.log('Updated Profile with Stats:', this.profile);
+          this.view = 'stats';
         }
       } catch (error) {
         console.error('Error fetching profile or stats:', error);
       }
     },
     async showMatchHistory() {
-      this.view = 'matchHistory';
       if (this.profile) {
         try {
           const matchHistory = await getFaceitMatchHistory(this.profile.player_id);
           this.matchHistory = matchHistory;
-          console.log('Match history:', this.matchHistory);  // Přidaný výstup
+          console.log('Match history:', this.matchHistory);
         } catch (error) {
           console.error('Error fetching match history:', error);
         }
@@ -164,9 +162,9 @@ export default defineComponent({
     showElo() {
       this.view = 'elo';
     },
-    formatRecentResults(results: number[]) {
+    formatRecentResults(results: string[]) {
       return results
-        .map(result => (result === 1 ? '<span style="color: green;">W</span>' : '<span style="color: red;">L</span>'))
+        .map(result => (result === '1' ? '<span style="color: green;">W</span>' : '<span style="color: red;">L</span>'))
         .join(' ');
     },
     logMapSrc(map: string) {
@@ -196,7 +194,7 @@ export default defineComponent({
   background: url('@/assets/counter-strike.png') no-repeat center center;
   background-size: cover;
   height: 100vh;
-  overflow-y: auto; 
+  overflow-y: auto;
 }
 
 header {
@@ -222,6 +220,11 @@ nav a {
   text-decoration: none;
   font-size: 18px;
   cursor: pointer;
+}
+
+nav a.disabled {
+  pointer-events: none;
+  color: gray;
 }
 
 .search-section {
@@ -289,7 +292,7 @@ button:hover {
 
 .stat-grid, .match-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); 
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
@@ -298,8 +301,9 @@ button:hover {
   color: white;
   padding: 20px;
   border-radius: 10px;
-  text-align: left;
+  text-align: center;
   display: flex;
+  flex-direction: column;
   align-items: center;
 }
 
