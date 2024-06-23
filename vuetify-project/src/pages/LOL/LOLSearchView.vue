@@ -67,16 +67,30 @@ export default defineComponent({
     const fetchUserData = async (puuid: string) => {
       try {
         const response = await axios.get(`http://localhost:3002/api/getSummonerData/${puuid}`);
-        console.log(`Received search nickname: ${response.data.name}`);
-        console.log(`Received search iconId: ${response.data.profileIconId}`);
-        console.log(`Received search iconUrl: ${response.data.profileIconURL}`);
-        console.log(`Received search level: ${response.data.summonerLevel}`);
-        lolStore.setUserData(response.data);
-        lolStore.userData.profileIconURL
-        console.log(`Received store nickname: ${lolStore.userData.name}`);
-        console.log(`Received store iconId: ${lolStore.userData.profileIconId}`);
-        console.log(`Received store iconUrl: ${lolStore.userData.profileIconURL}`);
-        console.log(`Received store level: ${lolStore.userData.summonerLevel}`);
+        const summonerData = response.data;
+
+        const profileIconURL = `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/${summonerData.profileIconId}.jpg`;
+
+        const userData = {
+          ...summonerData,
+          profileIconURL: profileIconURL,
+        };
+
+        console.log(`Received search nickname: ${userData.name}`);
+        console.log(`Received search iconId: ${userData.profileIconId}`);
+        console.log(`Received search iconUrl: ${userData.profileIconURL}`);
+        console.log(`Received search level: ${userData.summonerLevel}`);
+
+        lolStore.setUserData(userData);
+
+        // Fetch match history and store it in the user data
+        const matchHistoryResponse = await axios.get(`http://localhost:3002/api/getMatchHistory/${puuid}`);
+        const matchHistory = matchHistoryResponse.data;
+
+        userData.matchHistory = matchHistory;
+        lolStore.setUserData(userData);
+
+        console.log(`Received match history: ${matchHistory}`);
       } catch (error) {
         console.error('Error fetching user data:', error);
         alert('Error fetching user data. Please try again.');
