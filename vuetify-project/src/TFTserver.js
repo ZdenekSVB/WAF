@@ -6,12 +6,13 @@ const port = 3003;
 const cors = require('cors');
 app.use(cors());
 
-const RIOT_API_KEY = 'RGAPI-1284f84c-258a-4803-a521-0c4fb230b5e2';
+const RIOT_API_KEY = 'RGAPI-cafda5e6-20ab-4f0d-8072-a054c4d39051';
 
 app.use(express.json());
 
 app.get('/api/summoner/:name/:tag', async (req, res) => {
   const { name, tag } = req.params;
+  const region =tag.toLowerCase()
   const accountUrl = `https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${name}/${tag}?api_key=${RIOT_API_KEY}`;
 
   try {
@@ -19,12 +20,12 @@ app.get('/api/summoner/:name/:tag', async (req, res) => {
     console.log('Initial Summoner Data Response:', accountResponse.data);
     const puuid = accountResponse.data.puuid;
 
-    const tftSummonerUrl = `https://eun1.api.riotgames.com/tft/summoner/v1/summoners/by-puuid/${puuid}?api_key=${RIOT_API_KEY}`;
+    const tftSummonerUrl = `https://${region}.api.riotgames.com/tft/summoner/v1/summoners/by-puuid/${puuid}?api_key=${RIOT_API_KEY}`;
     const tftSummonerResponse = await axios.get(tftSummonerUrl);
     console.log('TFT Summoner Data Response:', tftSummonerResponse.data);
 
     const summonerId = tftSummonerResponse.data.id;
-    const leagueUrl = `https://eun1.api.riotgames.com/tft/league/v1/entries/by-summoner/${summonerId}?api_key=${RIOT_API_KEY}`;
+    const leagueUrl = `https://${region}.api.riotgames.com/tft/league/v1/entries/by-summoner/${summonerId}?api_key=${RIOT_API_KEY}`;
     const leagueResponse = await axios.get(leagueUrl);
     console.log('League Data Response:', leagueResponse.data);
 
@@ -84,10 +85,9 @@ app.get('/api/summoner/:name/:tag', async (req, res) => {
 });
 
 
-
 app.get('/api/leaderboard/:region/:tier/:division', async (req, res) => {
   const { region, tier, division } = req.params;
-  const validRegions = [    'eun1', 'euw1', 'br1', 'jp1', 'kr', 'la1', 'la2','na1', 'oc1', 'tr1', 'ru', 'ph2', 'sg2', 'th2','tw2', 'vn2'  ];  
+  const validRegions = ['eun1', 'euw1', 'br1', 'jp1', 'kr', 'la1', 'la2','na1', 'oc1', 'tr1', 'ru', 'ph2', 'sg2', 'th2','tw2', 'vn2'];  
   const validTiers = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND'];
   const validDivisions = ['I', 'II', 'III', 'IV'];
 

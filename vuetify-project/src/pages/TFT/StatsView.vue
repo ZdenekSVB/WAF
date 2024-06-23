@@ -32,7 +32,7 @@
                   <div><strong>League Points:</strong> {{ league.leaguePoints }}</div>
                   <div><strong>Wins:</strong> {{ league.wins }}</div>
                   <div><strong>Losses:</strong> {{ league.losses }}</div>
-                  <hr/>
+                  <hr />
                 </div>
               </v-card-text>
             </v-card>
@@ -42,7 +42,7 @@
             <v-card class="text-center">
               <v-card-title>Search</v-card-title>
               <v-card-text>
-                <v-text-field
+                <v-text-field v-if="!loading"
                   v-model="searchQuery"
                   label="Search"
                   outlined
@@ -50,12 +50,16 @@
                   hide-details
                   @keyup.enter="searchForPlayer"
                 ></v-text-field>
+                <div v-if="loading">
+                  <v-progress-circular indeterminate size="64"></v-progress-circular>
+                </div>
               </v-card-text>
             </v-card>
             <v-card class="text-center">
               <v-card-title>Graph</v-card-title>
               <v-card-text>
-                <canvas ref="winLossGraph" class="graph-placeholder"></canvas>
+                <v-btn v-if="!loadgraph"  color="primary" @click="renderWinLossGraph">Load Graph</v-btn>            
+                <canvas v-if="loadgraph" ref="winLossGraph" class="graph-placeholder"></canvas>
               </v-card-text>
             </v-card>
           </v-col>
@@ -93,12 +97,12 @@
         </v-row>
       </v-container>
     </v-main>
-    <router-view />
   </v-app>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, onMounted, ref, nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
 import { Chart, registerables } from 'chart.js';
 import AppBar from '@/components/AppBar.vue';
@@ -106,39 +110,52 @@ import AppBar from '@/components/AppBar.vue';
 Chart.register(...registerables);
 
 export default defineComponent({
-  name: 'StatsView',
+  name: 'TFTStatsView',
   components: {
     AppBar
-  },
-  data() {
-    return {
-      searchQuery: '',
-      profileIconUrl: '',
-      userInfo: {
-        name: '',
-        summonerLevel: 0,
-        tagLine: '',
-        leagueData: []
-      },
-      recentGamesHeaders: ['Game Number', 'Gold Left', 'Level', 'Placement', 'Players Eliminated', 'Total Damage', 'Augments'],
-      recentGamesData: []
-    };
-  },
-  methods: {
-    async searchForPlayer() {
-      const [name, tag] = this.searchQuery.split('#');
+  },  
+  setup() {
+    const route = useRoute();
+    const searchQuery = ref('');
+    const profileIconUrl = ref('');
+    const userInfo = ref({
+      name: '',
+      summonerLevel: 0,
+      tagLine: '',
+      leagueData: [],
+    });
+    const recentGamesHeaders = ref(['Game Number', 'Gold Left', 'Level', 'Placement', 'Players Eliminated', 'Total Damage', 'Augments']);
+    const recentGamesData = ref([]);
+    const loading = ref(false);
+    const loadgraph = ref(false);
+    const error = ref('');
+    const winLossGraphRef = ref<HTMLCanvasElement | null>(null);
+
+    const searchForPlayer = async () => {
+      const [name, tag] = searchQuery.value.split('#');
+      loading.value = true;
+      error.value = ''; // Clear previous errors
+
       try {
+        if (searchQuery.value.length < 1) {
+          alert('Empty Query');
+          return;
+        } else if (!searchQuery.value.includes("#")) {
+          alert('Missing # between Name and TagLine');
+          return;
+        }
+
         console.log(`Fetching data for ${name}#${tag}`);
         const response = await axios.get(`http://localhost:3003/api/summoner/${name}/${tag}`);
         console.log('Response data:', response.data);
-        this.userInfo.name = response.data.gameName;
-        this.userInfo.summonerLevel = response.data.summonerLevel;
-        this.userInfo.tagLine = response.data.tagLine;
-        this.userInfo.leagueData = response.data.leagueData;
-        this.profileIconUrl = `http://ddragon.leagueoflegends.com/cdn/11.24.1/img/profileicon/${response.data.profileIconId}.png`;
-        
-        // Processing recent games
-        this.recentGamesData = response.data.matchDetails.map((match, index) => {
+
+        userInfo.value.name = response.data.gameName;
+        userInfo.value.summonerLevel = response.data.summonerLevel;
+        userInfo.value.tagLine = response.data.tagLine;
+        userInfo.value.leagueData = response.data.leagueData;
+        profileIconUrl.value = `http://ddragon.leagueoflegends.com/cdn/11.24.1/img/profileicon/${response.data.profileIconId}.png`;
+
+        recentGamesData.value = response.data.matchDetails.map((match, index) => {
           const participant = match.matchDetails.info.participants.find(p => p.puuid === response.data.puuid);
           if (participant) {
             return [
@@ -148,29 +165,40 @@ export default defineComponent({
               participant.placement,
               participant.players_eliminated,
               participant.total_damage_to_players,
-              participant.augments // Only include augment names
+              participant.augments
             ];
           } else {
             console.error('Participant not found for current user in match:', match.matchId);
             return [];
           }
         });
-
-        // Render win/loss graph
-        this.renderWinLossGraph();
       } catch (error) {
         console.error('Error fetching player data:', error);
+        error.value = 'Error fetching player data. Please check the summoner name and try again.';
+      } finally {
+        loading.value = false;
       }
-    },
-    formatAugment(augment) {
+    };
+
+    const formatAugment = (augment) => {
       const parts = augment.split('_');
       const lastPart = parts[parts.length - 1];
       const formatted = lastPart.replace(/([A-Z])/g, ' $1').trim();
       return formatted;
-    },
-    renderWinLossGraph() {
-      const ctx = (this.$refs.winLossGraph as HTMLCanvasElement).getContext('2d');
-      const winLossData = this.userInfo.leagueData.reduce(
+    };
+
+    const renderWinLossGraph = () => {
+      loadgraph.value = true;
+      if (!winLossGraphRef.value) {
+        console.error('Canvas element not found');
+        return;
+      }
+      const ctx = winLossGraphRef.value.getContext('2d');
+      if (!ctx) {
+        console.error('Failed to get canvas context');
+        return;
+      }
+      const winLossData = userInfo.value.leagueData.reduce(
         (acc, league) => {
           acc.wins += league.wins;
           acc.losses += league.losses;
@@ -204,7 +232,30 @@ export default defineComponent({
           }
         }
       });
-    }
+    };
+
+    onMounted(() => {
+      const search = route.query.search as string;
+      if (search) {
+        searchQuery.value = search;
+        searchForPlayer();
+      }
+    });
+
+    return {
+      searchQuery,
+      profileIconUrl,
+      userInfo,
+      recentGamesHeaders,
+      recentGamesData,
+      loading,
+      loadgraph:false,
+      error,
+      searchForPlayer,
+      formatAugment,
+      renderWinLossGraph,
+      winLossGraphRef
+    };
   }
 });
 </script>
@@ -227,6 +278,6 @@ export default defineComponent({
 }
 
 .recent-games-table .v-card {
-  width: 1200px; /* Increase the width of the table */
+  width: 1200px;
 }
 </style>
