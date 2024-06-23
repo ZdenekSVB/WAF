@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <AppBar />
+    <AppBar :currentCategory="'TFT'" />
     <v-main>        
       <v-container>
         <v-card>
