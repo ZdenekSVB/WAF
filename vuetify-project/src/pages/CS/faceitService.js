@@ -33,3 +33,12 @@ export const getFaceitMatchHistory = async (player_id) => {
   }
 };
 
+export const getFaceitEloHistory = async (player_id) => {
+  try {
+    const response = await axios.get(`${API_URL}/getFaceitEloHistory/${player_id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching FACEIT ELO history:', error);
+    throw error;
+  }
+};
