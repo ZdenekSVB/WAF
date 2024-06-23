@@ -22,56 +22,9 @@
           <p v-if="profile.games && profile.games.cs2">ELO: <span>{{ profile.games.cs2.faceit_elo }}</span></p>
         </div>
       </div>
-      <div v-if="view === 'stats'" class="statistics">
-        <h3>Main statistics</h3>
-        <div class="stat-grid">
-          <div class="stat-card" v-if="profile.lifetime && profile.lifetime['Average K/D Ratio']">
-            <h4>K/D Ratio</h4>
-            <p>{{ profile.lifetime['Average K/D Ratio'] }}</p>
-          </div>
-          <div class="stat-card" v-if="profile.lifetime && profile.lifetime['Win Rate %']">
-            <h4>Win Rate %</h4>
-            <p>{{ profile.lifetime['Win Rate %'] }}%</p>
-          </div>
-          <div class="stat-card" v-if="profile.lifetime && profile.lifetime.Matches">
-            <h4>Matches</h4>
-            <p>Total Matches: {{ profile.lifetime.Matches }}</p>
-            <p v-if="profile.lifetime.Wins">Total Wins: {{ profile.lifetime.Wins }}</p>
-            <p v-if="profile.lifetime.Wins">Total Losses: {{ profile.lifetime.Matches - profile.lifetime.Wins }}</p>
-          </div>
-          <div class="stat-card" v-if="profile.lifetime && profile.lifetime['Total Headshots %']">
-            <h4>Total Headshots</h4>
-            <p>{{ profile.lifetime['Total Headshots %'] }}</p>
-          </div>
-          <div class="stat-card" v-if="profile.lifetime && profile.lifetime['Longest Win Streak']">
-            <h4>Longest Win Streak</h4>
-            <p>{{ profile.lifetime['Longest Win Streak'] }}</p>
-          </div>
-          <div class="stat-card" v-if="profile.lifetime && profile.lifetime['Current Win Streak']">
-            <h4>Current Win Streak</h4>
-            <p>{{ profile.lifetime['Current Win Streak'] }}</p>
-          </div>
-          <div class="stat-card" v-if="profile.lifetime && profile.lifetime['Recent Results']">
-            <h4>Recent Results</h4>
-            <p v-html="formatRecentResults(profile.lifetime['Recent Results'])"></p>
-          </div>
-        </div>
-      </div>
-      <div v-if="view === 'matchHistory'" class="match-history">
-        <h3>Match history</h3>
-        <div v-for="match in matchHistory" :key="match.match_id" class="match-card">
-          <div class="map-container">
-            <img :src="`/src/assets/maps/${match.map}.png`" alt="Map Image" class="map-image">
-            <p>{{ match.map }}</p>
-          </div>
-          <div class="match-details">
-            <p class="result" :class="{'win': match.results === 'Win', 'loss': match.results === 'Loss'}">{{ match.results }}</p>
-            <p>K-A-D: {{ match.kills }}-{{ match.assists }}-{{ match.deaths }}</p>
-            <p>Rating: {{ match.rating }}</p>
-            <p>Date: {{ match.date }}</p>
-          </div>
-        </div>
-      </div>
+      <StatsView v-if="view === 'stats'" :profile="profile" />
+      <MatchHistoryView v-if="view === 'matchHistory'" :profile="profile" :matchHistory="matchHistory" />
+      <EloView v-if="view === 'elo'" :profile="profile" />
     </div>
   </div>
 </template>
@@ -79,43 +32,13 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { getFaceitProfile, getFaceitStats, getFaceitMatchHistory } from '@/pages/CS/faceitService';
-
-interface Profile {
-  player_id: string;
-  nickname: string;
-  avatar: string;
-  games?: {
-    cs2?: {
-      faceit_elo?: number;
-    };
-  };
-  lifetime?: {
-    Matches?: number;
-    'Current Win Streak'?: number;
-    'Longest Win Streak'?: number;
-    'Total Headshots %'?: number;
-    'Recent Results'?: string[];
-    'Average K/D Ratio'?: number;
-    'Win Rate %'?: number;
-    Wins?: number;
-  };
-}
-
-interface Match {
-  match_id: string;
-  results: string;
-  kills: number;
-  assists: number;
-  deaths: number;
-  rating: number;
-  date: string;
-  elo: number;
-  map: string;
-  img_small: string;
-}
+import StatsView from '@/pages/CS/StatsView.vue';
+import MatchHistoryView from '@/pages/CS/MatchHistoryView.vue';
+import EloView from '@/pages/CS/EloView.vue';
 
 export default defineComponent({
   name: 'CSView',
+  components: { StatsView, MatchHistoryView, EloView },
   data() {
     return {
       nickname: '',
@@ -126,9 +49,13 @@ export default defineComponent({
   },
   methods: {
     setView(view: string) {
+      console.log('Setting view to:', view);
       this.view = view;
       if (view === 'matchHistory' && this.profile) {
         this.showMatchHistory();
+      }
+      if (view === 'elo' && this.profile) {
+        console.log('Switching to ELO view');
       }
     },
     async searchProfile() {
@@ -155,36 +82,11 @@ export default defineComponent({
           console.error('Error fetching match history:', error);
         }
       }
-    },
-    showStats() {
-      this.view = 'stats';
-    },
-    showElo() {
-      this.view = 'elo';
-    },
-    formatRecentResults(results: string[]) {
-      return results
-        .map(result => (result === '1' ? '<span style="color: green;">W</span>' : '<span style="color: red;">L</span>'))
-        .join(' ');
-    },
-    logMapSrc(map: string) {
-      console.log('Map:', map);
-    }
-  },
-  mounted() {
-    this.matchHistory.forEach(match => {
-      this.logMapSrc(match.map);
-    });
-  },
-  watch: {
-    matchHistory(newMatchHistory) {
-      newMatchHistory.forEach(match => {
-        this.logMapSrc(match.map);
-      });
     }
   }
 });
 </script>
+
 
 <style scoped>
 .cs-view {
