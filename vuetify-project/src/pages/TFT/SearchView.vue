@@ -44,7 +44,7 @@ export default defineComponent({
       }
 
       try {
-        const response = await axios.get(`http://localhost:3003/api/summoner/${name}/${tag}`);
+        const response = await axios.get(`http://localhost:3002/api/summoner/${name}/${tag}`);
         if (response.data) {
           this.$router.push({ name: 'TFTStats', query: { search: trimmedQuery } });
         }

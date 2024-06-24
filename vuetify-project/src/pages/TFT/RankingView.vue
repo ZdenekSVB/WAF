@@ -109,7 +109,7 @@ export default {
       }
       this.loading = true;
       try {
-        const response = await axios.get(`http://localhost:3003/api/leaderboard/${selectedRegion}/${selectedTier}/${selectedDivision}`);
+        const response = await axios.get(`http://localhost:3002/api/leaderboard/${selectedRegion}/${selectedTier}/${selectedDivision}`);
         this.players = response.data;
       } catch (error) {
         console.error('Error loading data:', error);

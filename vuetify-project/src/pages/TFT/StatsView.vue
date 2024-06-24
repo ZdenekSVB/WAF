@@ -173,7 +173,7 @@ export default defineComponent({
       error.value = '';
       loading.value = true;
       try {
-        const response = await axios.get(`http://localhost:3003/api/summoner/${name}/${tag}`);
+        const response = await axios.get(`http://localhost:3002/api/summoner/${name}/${tag}`);
 
         userInfo.value.name = response.data.gameName;
         userInfo.value.summonerLevel = response.data.summonerLevel;

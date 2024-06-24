@@ -6,7 +6,7 @@ describe('HomeView Tests', () => {
     });
 
     it('should display all game images with correct attributes', () => {
-      cy.get('.game.dota img').should('have.attr', 'alt', 'dota').and('be.visible');
+      cy.get('.game.dota img').should('have.attr', 'alt', 'Dota').and('be.visible');
       cy.get('.game.counter-strike img').should('have.attr', 'alt', 'Counter-Strike 2').and('be.visible');
       cy.get('.game.tft img').should('have.attr', 'alt', 'Teamfight Tactics').and('be.visible');
       cy.get('.game.league-of-legends img').should('have.attr', 'alt', 'League of Legends').and('be.visible');
