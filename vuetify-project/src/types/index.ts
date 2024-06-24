@@ -34,12 +34,24 @@ export interface LolAccountData {
 export interface MatchDetails {
   matchId: string;
   date: string;
-  champion: string;
-  role: string;
+  duration: string;
+  gameMode: string;
+  participants: ParticipantDto[];
+  win: boolean;
+}
+
+export interface ParticipantDto {
+  summonerName: string;
+  championId: number;
+  championName: string;
   kills: number;
   deaths: number;
   assists: number;
+  role: string;
+  lane: string;
+  teamId: number;
   win: boolean;
+  puuid: string;
 }
 
 

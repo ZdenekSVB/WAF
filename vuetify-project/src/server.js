@@ -8,7 +8,7 @@ const PORT = 3002;
 app.use(cors());
 app.use(express.json());
 
-const API_KEY = 'RGAPI-11ee69fe-471e-4a67-922f-867711bd36ed';
+const API_KEY = 'RGAPI-ec61a056-956b-4ebc-808a-3a419bedbda9';
 const ACCOUNT_API_ROUTING_VAL = "https://europe.api.riotgames.com"; 
 const SUMMONER_API_ROUTING_VAL = "https://eun1.api.riotgames.com"; 
 
@@ -100,22 +100,37 @@ async function fetchMatchDetailsWithDelay(matchIds, puuid, ACCOUNT_API_ROUTING_V
       const matchDetailsData = matchDetailsResponse.data;
       const participant = matchDetailsData.info.participants.find(p => p.puuid === puuid);
 
-      matchDetails.push({
-        matchId,
-        date: new Date(matchDetailsData.info.gameCreation).toLocaleDateString(),
-        champion: participant.championName,
-        role: participant.role,
-        kills: participant.kills,
-        deaths: participant.deaths,
-        assists: participant.assists,
-        win: participant.win
-      });
+      const gameDuration = matchDetailsData.info.gameEndTimestamp
+        ? (matchDetailsData.info.gameEndTimestamp - matchDetailsData.info.gameCreation) / 1000
+        : matchDetailsData.info.gameDuration;
+
+        const participants = matchDetailsData.info.participants.map(p => ({
+          summonerName: p.summonerName,
+          championId: p.championId,
+          championName: p.championName,
+          kills: p.kills,
+          deaths: p.deaths,
+          assists: p.assists,
+          role: p.role,
+          lane: p.lane,
+          teamId: p.teamId,
+          win: p.win,
+          puuid: p.puuid
+        }));
+  
+        matchDetails.push({
+          matchId,
+          date: new Date(matchDetailsData.info.gameCreation).toLocaleDateString(),
+          duration: `${Math.floor(gameDuration / 60)}m ${Math.floor(gameDuration % 60)}s`,
+          gameMode: matchDetailsData.info.gameMode,
+          participants,
+          win: participant.win
+        });
 
       console.log(`Fetched details for match ID: ${matchId}. Waiting for 1 second before next request...`);
-      await wait(500); // Wait for 1 second before fetching the next match
+      await wait(500); 
     } catch (error) {
       console.error(`Error fetching match details for match ID ${matchId}:`, error.response ? error.response.data : error.message);
-      // Handle the error or continue to the next match
     }
   }
   return matchDetails;
