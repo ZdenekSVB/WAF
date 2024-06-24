@@ -36,6 +36,12 @@ export default defineComponent({
         CS: ['CS'],
         LOL: ['LOL'],
         DOTA: ['DOTA']
+      },      
+      menuRoutes: {
+        TFT: ['/tft/search', '/tft/stats', '/tft/buffs-nerfs', '/tft/ranking'],
+        CS: ['/counter-strike'],
+        LOL: ['/lol/search'],
+        DOTA: ['/valorant']
       },
       drawerItems: ['Hlavní stránka', 'TFT', 'CSGO', 'LOL', 'Valorant']
     };
@@ -50,16 +56,16 @@ export default defineComponent({
       let routes = [];
       switch (this.currentCategory) {
         case 'TFT':
-          routes = ['/tft/search', '/tft/stats', '/tft/buffs-nerfs', '/tft/ranking'];
+          routes = this.menuRoutes.TFT;
           break;
         case 'CS':
-          routes = ['/account-view/:accountId', '/counter-strike'];
+          routes =this.menuRoutes.CS;
           break;
         case 'LOL':
-          routes = ['/lol/search', '/lol/account'];
+          routes = this.menuRoutes.LOL;
           break;
         case 'DOTA':
-          routes = ['/valorant'];
+          routes = this.menuRoutes.DOTA;
           break;
         default:
           routes = [];
@@ -74,16 +80,16 @@ export default defineComponent({
     let index = -1;
     switch (this.currentCategory) {
       case 'TFT':
-        index = ['/tft/search', '/tft/stats', '/tft/buffs-nerfs', '/tft/ranking'].indexOf(currentPath);
+        index = this.menuRoutes.TFT.indexOf(currentPath);
         break;
       case 'CS':
-        index = ['/account-view/:accountId', '/counter-strike'].indexOf(currentPath);
+        index = this.menuRoutes.CS.indexOf(currentPath);
         break;
       case 'LOL':
-        index = ['/lol/search', '/lol/account'].indexOf(currentPath);
+        index = this.menuRoutes.LOL.indexOf(currentPath);
         break;
       case 'DOTA':
-        index = ['/valorant'].indexOf(currentPath);
+        index = this.menuRoutes.DOTA.indexOf(currentPath);
         break;
       default:
         index = -1;
