@@ -3,19 +3,12 @@
     <NavBar />
     <v-main>
       <v-container>
-        <v-card class="heroes-card" elevation="2">
-          <v-card-title>Hero Statistics</v-card-title>
+        <v-card class="favorites-card" elevation="2">
+          <v-card-title>My Favorite Heroes</v-card-title>
           <v-card-text>
-            <v-text-field
-              v-model="search"
-              label="Search by Name"
-              outlined
-              dense
-              clearable
-            ></v-text-field>
             <v-data-table
               :headers="headers"
-              :items="filteredHeroes"
+              :items="favoriteHeroes"
               item-key="id"
               class="elevation-1"
             >
@@ -30,7 +23,7 @@
                 <span v-else>No Image</span>
               </template>
               <template v-slot:item.action="{ item }">
-                <v-btn @click="addToFavorites(item)" color="primary">Add to Favorites</v-btn>
+                <v-btn @click="removeFromFavorites(item)" color="red">Remove</v-btn>
               </template>
             </v-data-table>
           </v-card-text>
@@ -42,18 +35,16 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import axios from 'axios';
 import NavBar from '@/pages/DOTA/NavBar.vue';
 
 export default defineComponent({
-  name: 'HeroStats',
+  name: 'MyHeroes',
   components: {
     NavBar
   },
   data() {
     return {
-      heroes: [],
-      search: '', // Initialize search string
+      favoriteHeroes: [],
       headers: [
         { title: 'Image', value: 'img', sortable: false },
         { title: 'Name', value: 'localized_name' },
@@ -67,45 +58,29 @@ export default defineComponent({
         { title: 'Attack Range', value: 'attack_range' },
         { title: 'Move Speed', value: 'move_speed' },
         { title: 'Action', value: 'action', sortable: false }
-      ],
+      ]
     };
   },
-  computed: {
-    filteredHeroes() {
-      // Filter heroes based on search string
-      return this.heroes.filter(hero =>
-        hero.localized_name.toLowerCase().includes(this.search.toLowerCase())
-      );
-    },
-  },
   methods: {
-    addToFavorites(hero) {
+    loadFavorites() {
+      this.favoriteHeroes = JSON.parse(localStorage.getItem('favoriteHeroes') || '[]');
+    },
+    removeFromFavorites(hero) {
       let favorites = JSON.parse(localStorage.getItem('favoriteHeroes') || '[]');
-      if (!favorites.some(fav => fav.id === hero.id)) {
-        favorites.push(hero);
-        localStorage.setItem('favoriteHeroes', JSON.stringify(favorites));
-        alert(`${hero.localized_name} has been added to your favorites.`);
-      } else {
-        alert(`${hero.localized_name} is already in your favorites.`);
-      }
+      favorites = favorites.filter(fav => fav.id !== hero.id);
+      localStorage.setItem('favoriteHeroes', JSON.stringify(favorites));
+      this.loadFavorites();
+      alert(`${hero.localized_name} has been removed from your favorites.`);
     }
   },
-  async created() {
-    try {
-      const response = await axios.get('https://api.opendota.com/api/heroStats');
-      this.heroes = response.data.map(hero => ({
-        ...hero,
-        img: `https://cdn.cloudflare.steamstatic.com${hero.img}`
-      }));
-    } catch (error) {
-      console.error('Error fetching hero data:', error);
-    }
-  },
+  created() {
+    this.loadFavorites();
+  }
 });
 </script>
 
 <style scoped>
-.heroes-card {
+.favorites-card {
   animation: fadeIn 1s ease-in-out;
   margin-top: 20px;
 }
