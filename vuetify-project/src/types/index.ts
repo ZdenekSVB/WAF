@@ -55,11 +55,5 @@ export interface ParticipantDto {
 }
 
 
-export interface Champion {
-  id: number;
-  name: string;
-  iconURL: string
-}
-
 
   
