@@ -11,14 +11,14 @@
                 <v-img :src="champion.iconURL" aspect-ratio="1" class="champion-image"></v-img>
                 <div><strong>Title:</strong> {{ champion.championData.title }}</div>
                 <div><strong>Bio:</strong> {{ champion.championData.bio }}</div>
-                <v-row>
-                  <v-col cols="3" v-for="image in champion.championData.imagesURL" :key="image.id">
-                    <v-card>
-                      <v-img :src="image.imageURL" aspect-ratio="1"></v-img>
-                      <v-card-title>{{ image.name }}</v-card-title>
-                    </v-card>
-                  </v-col>
-                </v-row>
+                <v-carousel hide-delimiters height="400px" v-model="currentSkin">
+                  <v-carousel-item v-for="(image) in champion.championData.imagesURL" :key="image.id">
+                    <v-img :src="image.imageURL" aspect-ratio="1"></v-img>
+                  </v-carousel-item>
+                </v-carousel>
+                <div class="text-center mt-2">
+                  <strong>{{ champion.championData.imagesURL[currentSkin]?.name }}</strong>
+                </div>
               </v-card-text>
             </v-card>
           </v-col>
@@ -44,6 +44,7 @@ export default defineComponent({
     const route = useRoute();
     const championId = route.params.championId as string;
     const champion = ref<Champion | null>(null);
+    const currentSkin = ref(0);
 
     onMounted(async () => {
       try {
@@ -58,11 +59,12 @@ export default defineComponent({
             title: response.data.title,
             bio: response.data.shortBio,
             imagesURL: response.data.skins.map((skin: any) => {
-              const skinFolder = skin.id === 0 ? 'base' : `skin${skin.id}`;
+              const skinFolder = skin.isBase ? 'base' : `skin${String(skin.id % 1000).padStart(2, '0')}`;
+              const skinImage = String(skin.id % 1000).padStart(2, '0').replace(/^0+(?!$)/, '');
               return {
                 id: skin.id,
                 name: skin.name,
-                imageURL: `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/characters/${championName}/skins/${skinFolder}/images/${championName}_splash_centered_${skin.id}.jpg`
+                imageURL: `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/characters/${championName}/skins/${skinFolder}/images/${championName}_splash_uncentered_${skinImage}.jpg`
               };
             })
           }
@@ -73,7 +75,8 @@ export default defineComponent({
     });
 
     return {
-      champion
+      champion,
+      currentSkin
     };
   }
 });
@@ -83,5 +86,11 @@ export default defineComponent({
 .champion-image {
   max-width: 128px;
   margin-bottom: 16px;
+}
+.text-center {
+  text-align: center;
+}
+.mt-2 {
+  margin-top: 16px;
 }
 </style>
