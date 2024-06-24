@@ -9,11 +9,11 @@
             <v-card class="text-center">
               <v-card-title>Summoner Info</v-card-title>
               <v-card-text>
-                <v-text-field v-model="name" label="Summoner Name" outlined dense></v-text-field>
-                <v-text-field v-model="tag" label="Tag" outlined dense></v-text-field>
+                <v-text-field v-model="name" label="Summoner Name" outlined dense data-cy="input-name"></v-text-field>
+                <v-text-field v-model="tag" label="Tag" outlined dense data-cy="input-tag"></v-text-field>
 
-                <v-btn v-if="!loading" @click="fetchSummonerData" color="primary">Fetch Data</v-btn>
-                <div v-if="loading">
+                <v-btn v-if="!loading" @click="fetchSummonerData" color="primary" data-cy="fetch-button">Fetch Data</v-btn>
+                <div v-if="loading" data-cy="loading-indicator">
                   <v-progress-circular indeterminate size="64"></v-progress-circular>
                 </div>
               </v-card-text>
@@ -32,8 +32,8 @@
                   <div><strong>Summoner Name:</strong> {{ info.name }}</div>
                   <div><strong>Summoner Level:</strong> {{ info.summonerLevel }}</div>
                 </div>
-                <v-btn @click="editUserInfo(index)" color="primary">Edit</v-btn>
-                <v-btn @click="deleteUserInfo(index)" color="error">Delete</v-btn>
+                <v-btn @click="editUserInfo(index)" color="primary" data-cy="edit-button">Edit</v-btn>
+                <v-btn @click="deleteUserInfo(index)" color="error" data-cy="delete-button">Delete</v-btn>
               </v-card-text>
             </v-card>
           </v-col>

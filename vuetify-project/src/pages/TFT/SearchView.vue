@@ -10,12 +10,12 @@
         dense
         hide-details
         @keyup.enter="goToStatsPage"
+        data-cy="search-input" 
       ></v-text-field>
-      <v-btn @click="goToStatsPage">Search</v-btn>
+      <v-btn @click="goToStatsPage" data-cy="search-button">Search</v-btn>
     </div>
   </v-app>
 </template>
-
 <script lang="ts">
 import { defineComponent } from 'vue';
 import axios from 'axios';
