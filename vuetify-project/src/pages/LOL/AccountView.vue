@@ -108,7 +108,14 @@
                     </v-card>
                   </v-col>
                 </v-row>
-                <v-btn @click="loadMoreMatches" class="mx-auto">Load More Matches</v-btn>
+                <div class="text-center mt-2">
+                  <v-btn @click="loadMoreMatches" color="primary" :disabled="loadingMoreMatches">
+                    <span v-if="loadingMoreMatches">
+                      <v-progress-circular indeterminate color="white" size="20"></v-progress-circular>
+                    </span>
+                    <span v-else>Load More Matches</span>
+                  </v-btn>
+                </div>
               </v-card-text>
             </v-card>
           </v-col>
@@ -125,7 +132,6 @@ import { useLolStore } from '@/stores/lolStore';
 import { fetchUserData, fetchMoreMatchHistory } from '@/pages/LOL/lolService';
 import AppBar from '@/components/AppBar.vue';
 
-// Import rank icons
 import BronzeIcon from '@/assets/lolranks/Rank=Bronze.png';
 import SilverIcon from '@/assets/lolranks/Rank=Silver.png';
 import GoldIcon from '@/assets/lolranks/Rank=Gold.png';
@@ -161,6 +167,7 @@ export default defineComponent({
 
     const searchQuery = ref('');
     const loadingMatches = ref(false);
+    const loadingMoreMatches = ref(false);
     const matchStart = ref(0);
     const expandedMatches = ref<{ [key: string]: boolean }>({});
 
@@ -178,18 +185,18 @@ export default defineComponent({
         console.log(`Received profileIconURL: ${userData.profileIconURL}`);
         console.log(`Received level: ${userData.summonerLevel}`);
         lolStore.setUserData(userData);
-        matchStart.value = 20; // Initial fetch of 20 matches
+        matchStart.value = 20; 
       }
       loadingMatches.value = false;
     };
 
     const loadMoreMatches = async () => {
       if (!userInfo.value.puuid) return;
-      loadingMatches.value = true;
+      loadingMoreMatches.value = true;
       const moreMatches = await fetchMoreMatchHistory(userInfo.value.puuid, matchStart.value);
       lolStore.addMatchHistory(moreMatches);
-      matchStart.value += 20; // Increment the start for the next batch of matches
-      loadingMatches.value = false;
+      matchStart.value += 20; 
+      loadingMoreMatches.value = false;
     };
 
     const toggleExpand = (matchId: string) => {
@@ -219,6 +226,7 @@ export default defineComponent({
       userInfo,
       searchQuery,
       loadingMatches,
+      loadingMoreMatches,
       matchStart,
       expandedMatches,
       searchForPlayer,
@@ -234,11 +242,11 @@ export default defineComponent({
 
 <style scoped>
 .win-background {
-  background-color: blue;
+  background-color: rgb(47, 59, 229);
   color: black;
 }
 .loss-background {
-  background-color: red;
+  background-color: rgb(255, 62, 62);
   color: black;
 }
 .header-cell,
@@ -252,5 +260,11 @@ export default defineComponent({
 }
 .team-card {
   margin-bottom: 10px;
+}
+.text-center {
+  text-align: center;
+}
+.mt-2 {
+  margin-top: 16px;
 }
 </style>
