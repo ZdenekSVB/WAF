@@ -30,6 +30,20 @@
                 </v-list-item>
               </v-list>
             </v-card>
+            <v-card class="peers-card" elevation="2" v-if="peers.length">
+              <v-card-title>Top Peers</v-card-title>
+              <v-card-text>
+                <v-data-table
+                  :headers="peersHeaders"
+                  :items="peers"
+                  class="elevation-1"
+                >
+                  <template v-slot:item.avatarfull="{ item }">
+                    <v-img :src="item.avatarfull" alt="Peer Profile Pic" class="peer-avatar"></v-img>
+                  </template>
+                </v-data-table>
+              </v-card-text>
+            </v-card>
           </v-col>
           <v-col cols="12" md="8">
             <v-card class="stats-card" elevation="2">
@@ -73,31 +87,12 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import axios from 'axios';
-import { useRoute, useRouter } from 'vue-router';
 import NavBar from '@/pages/DOTA/NavBar.vue';
-import { VApp, VMain, VContainer, VRow, VCol, VCard, VImg, VCardTitle, VCardSubtitle, VList, VListItem, VListItemTitle, VListItemSubtitle, VDataTable, VCardText } from 'vuetify/components';
-// Ensure you import the necessary Vuetify components
-
 
 export default defineComponent({
   name: 'AccountView',
   components: {
     NavBar,
-    VApp,
-    VMain,
-    VContainer,
-    VRow,
-    VCol,
-    VCard,
-    VImg,
-    VCardTitle,
-    VCardSubtitle,
-    VList,
-    VListItem,
-    VListItemTitle,
-    VListItemSubtitle,
-    VDataTable,
-    VCardText
   },
   data() {
     return {
@@ -105,24 +100,31 @@ export default defineComponent({
       stats: [],
       matches: [],
       heroes: [],
+      peers: [],
       headers: [
         { text: 'Statistic', align: 'start', sortable: false, value: 'stat' },
         { text: 'Value', value: 'value' },
       ],
       matchesHeaders: [
-        { text: 'Match ID', value: 'match_id' },
-        { text: 'Hero ID', value: 'hero_id' },
-        { text: 'Kills', value: 'kills' },
-        { text: 'Deaths', value: 'deaths' },
-        { text: 'Assists', value: 'assists' },
-        { text: 'Duration', value: 'duration' },
-        { text: 'Result', value: 'result' },
+        { title: 'Match ID', value: 'match_id' },
+        { title: 'Hero ID', value: 'hero_id' },
+        { title: 'Kills', value: 'kills' },
+        { title: 'Deaths', value: 'deaths' },
+        { title: 'Assists', value: 'assists' },
+        { title: 'Duration', value: 'duration' },
+        { title: 'Result', value: 'result' },
       ],
       heroesHeaders: [
-        { text: 'Hero ID', value: 'hero_id' },
-        { text: 'Games Played', value: 'games' },
-        { text: 'Wins', value: 'win' },
-        { text: 'Win Rate', value: 'win_rate' },
+        { title: 'Hero ID', value: 'hero_id' },
+        { title: 'Games Played', value: 'games' },
+        { title: 'Wins', value: 'win' },
+        { title: 'Win Rate', value: 'win_rate' },
+      ],
+      peersHeaders: [
+        { title: 'Peer Name', value: 'personaname' },
+        { title: 'Games Played', value: 'games' },
+        { title: 'Win Rate', value: 'win_rate' },
+        { title: 'Profile Pic', value: 'avatarfull' }
       ],
     };
   },
@@ -130,17 +132,19 @@ export default defineComponent({
     try {
       const API_URL = "https://api.opendota.com/api/players";
       const accountId = to.params.accountId;
-      const [playerRes, wlRes, matchesRes, heroesRes] = await Promise.all([
+      const [playerRes, wlRes, matchesRes, heroesRes, peersRes] = await Promise.all([
         axios.get(`${API_URL}/${accountId}`),
         axios.get(`${API_URL}/${accountId}/wl`),
         axios.get(`${API_URL}/${accountId}/matches`),
-        axios.get(`${API_URL}/${accountId}/heroes`)
+        axios.get(`${API_URL}/${accountId}/heroes`),
+        axios.get(`${API_URL}/${accountId}/peers?limit=10`)
       ]);
 
       const playerData = playerRes.data;
       const wlData = wlRes.data;
       const matchesData = matchesRes.data;
       const heroesData = heroesRes.data;
+      const peersData = peersRes.data;
 
       next(vm => {
         vm.profile = playerData.profile;
@@ -160,6 +164,10 @@ export default defineComponent({
         vm.heroes = heroesData.map(hero => ({
           ...hero,
           win_rate: hero.games ? ((hero.win / hero.games) * 100).toFixed(2) + '%' : '0%'
+        }));
+        vm.peers = peersData.map(peer => ({
+          ...peer,
+          win_rate: peer.games ? ((peer.with_win / peer.with_games) * 100).toFixed(2) + '%' : '0%'
         }));
       });
     } catch (error) {
@@ -183,7 +191,7 @@ export default defineComponent({
 .profile-card:hover {
   transform: scale(1.05);
 }
-.stats-card, .matches-card, .heroes-card {
+.stats-card, .matches-card, .heroes-card, .peers-card {
   animation: fadeIn 1s ease-in-out;
   margin-top: 20px;
 }
@@ -194,6 +202,11 @@ export default defineComponent({
   to {
     opacity: 1;
   }
+}
+.peer-avatar {
+  width: 50px; /* Adjust size as needed */
+  height: 50px; /* Adjust size as needed */
+  border-radius: 50%;
 }
 .v-data-table__row {
   transition: background-color 0.3s ease;
