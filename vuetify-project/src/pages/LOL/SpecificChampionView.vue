@@ -112,7 +112,11 @@ export default defineComponent({
     };
 
     const showSpellDescription = (ability: ChampionSpell | ChampionPassive) => {
-      selectedAbility.value = ability;
+      if (selectedAbility.value === ability) {
+        selectedAbility.value = null;
+      } else {
+        selectedAbility.value = ability;
+      }
     };
 
     return {
