@@ -81,8 +81,8 @@
                 </v-list-item>
               </v-list>
             </v-card>
-            <v-card class="peers-card" elevation="2" v-if="peers.length">
-              <v-card-title>Top Peers</v-card-title>
+            <v-card class="peers-card" elevation="2">
+              <v-card-title>Top TeamMates</v-card-title>
               <v-card-text>
                 <v-data-table
                   :headers="peersHeaders"
@@ -114,7 +114,6 @@
                   :headers="matchesHeaders"
                   :items="matches"
                   class="elevation-1"
-                  @click:row="goToMatchDetail"
                 >
                   <template v-slot:item.hero_id="{ item }">
                     <v-tooltip bottom>
@@ -408,7 +407,7 @@ export default defineComponent({
           axios.get(`${API_URL}/${accountId}/wl`),
           axios.get(`${API_URL}/${accountId}/matches`),
           axios.get(`${API_URL}/${accountId}/heroes`),
-          axios.get(`${API_URL}/${accountId}/peers?limit=10`)
+          axios.get(`${API_URL}/${accountId}/peers`),
         ]);
 
         const playerData = playerRes.data;

@@ -6,7 +6,7 @@
       <div class="search-field">
         <v-text-field
           v-model="searchQuery"
-          label="Search"
+          label="Please enter your Dota Account ID"
           outlined
           class="mx-auto"
           dense
