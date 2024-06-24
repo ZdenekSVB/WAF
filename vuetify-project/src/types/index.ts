@@ -58,7 +58,9 @@ export interface Champion {
   id: number;
   name: string;
   iconURL: string;
-  championData: ChampionData
+  championData: ChampionData;
+  spells: ChampionSpell[];
+  passive: ChampionPassive;
 }
 
 export interface ChampionData {
@@ -71,4 +73,17 @@ export interface ChampionImages {
   id: string;
   name: string;
   imageURL: string;
+}
+
+export interface ChampionSpell { 
+  spellKey: string;
+  name: string;
+  description: string;
+  abilityIconPath: string;
+}
+
+export interface ChampionPassive { 
+  name: string;
+  description: string;
+  abilityIconPath: string;
 }
