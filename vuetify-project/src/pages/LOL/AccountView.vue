@@ -147,7 +147,7 @@ export default defineComponent({
 
     const rankIcon = (tier: string) => {
       try {
-        return new URL(`C:/Users/vitce/Documents/waf_ls2023-2024_xcevelik/vuetify-project/src/assets/lolranks/Rank${tier}.png`, import.meta.url).href;
+        return new URL(``, import.meta.url).href;
       } catch (e) {
         console.error('Error loading rank icon:', e);
         return new URL('../assets/default.png', import.meta.url).href;
