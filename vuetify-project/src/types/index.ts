@@ -58,4 +58,17 @@ export interface Champion {
   id: number;
   name: string;
   iconURL: string;
+  championData: ChampionData
+}
+
+export interface ChampionData {
+  title: string;
+  bio: string;
+  imagesURL: ChampionImages[];
+}
+
+export interface ChampionImages {
+  id: string;
+  name: string;
+  imageURL: string;
 }
