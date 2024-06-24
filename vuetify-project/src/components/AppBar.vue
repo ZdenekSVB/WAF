@@ -1,7 +1,7 @@
 <template>
   <v-app-bar app>
     <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-    <v-btn v-for="(item, index) in menuItems" :key="index" @click="changeActiveSite(index)" variant="text">
+    <v-btn v-for="(item, index) in menuItems[currentCategory]" :key="index" @click="changeActiveSite(index)" variant="text">
       <span :class="{'active': activeItem === index}">{{ item }}</span>
     </v-btn>
   </v-app-bar>
@@ -21,23 +21,55 @@ import { useRoute, useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'AppBar',
+  props: {
+    currentCategory: {
+      type: String,
+      required: true
+    }
+  },
   data() {
     return {
       drawer: false,
       activeItem: 0,
-      menuItems: ['Team Fight Tactics', 'Stats', 'Buffs/Nerfs', 'Ranking'],
-      drawerItems: ['Hlavní stránka', 'TFT', 'CSGO', 'LOL', 'Valorant'],
-      searchQuery: ''
+      menuItems: {
+        TFT: ['Team Fight Tactics', 'Stats', 'Buffs/Nerfs', 'Ranking'],
+        CS: ['CS'],
+        LOL: ['LOL'],
+        DOTA: ['DOTA']
+      },      
+      menuRoutes: {
+        TFT: ['/tft/search', '/tft/stats', '/tft/buffs-nerfs', '/tft/ranking'],
+        CS: ['/counter-strike'],
+        LOL: ['/lol/search'],
+        DOTA: ['/valorant']
+      },
+      drawerItems: ['Hlavní stránka', 'TFT', 'CSGO', 'LOL', 'Valorant']
     };
   },
   methods: {
     navigateTo(index: number) {
-      const routes = ['/', '/tft/search', '/counter-strike', '/league-of-legends', '/valorant'];
+      const routes = ['/', '/tft/search', '/counter-strike', '/lol/search', '/valorant'];
       this.$router.push(routes[index]);
     },
     changeActiveSite(index: number) {
       this.activeItem = index;
-      const routes = ['/tft/search', '/tft/stats', '/tft/buffs-nerfs', '/tft/ranking'];
+      let routes = [];
+      switch (this.currentCategory) {
+        case 'TFT':
+          routes = this.menuRoutes.TFT;
+          break;
+        case 'CS':
+          routes =this.menuRoutes.CS;
+          break;
+        case 'LOL':
+          routes = this.menuRoutes.LOL;
+          break;
+        case 'DOTA':
+          routes = this.menuRoutes.DOTA;
+          break;
+        default:
+          routes = [];
+      }
       this.$router.push(routes[index]);
     }
   },
@@ -45,7 +77,23 @@ export default defineComponent({
     // Set activeItem based on current route on component mount
     const route = useRoute();
     const currentPath = route.path;
-    const index = ['/tft/search', '/tft/stats', '/tft/buffs-nerfs', '/tft/ranking'].indexOf(currentPath);
+    let index = -1;
+    switch (this.currentCategory) {
+      case 'TFT':
+        index = this.menuRoutes.TFT.indexOf(currentPath);
+        break;
+      case 'CS':
+        index = this.menuRoutes.CS.indexOf(currentPath);
+        break;
+      case 'LOL':
+        index = this.menuRoutes.LOL.indexOf(currentPath);
+        break;
+      case 'DOTA':
+        index = this.menuRoutes.DOTA.indexOf(currentPath);
+        break;
+      default:
+        index = -1;
+    }
     if (index !== -1) {
       this.activeItem = index;
     }

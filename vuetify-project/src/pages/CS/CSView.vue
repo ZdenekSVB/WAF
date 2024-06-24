@@ -35,7 +35,15 @@
 
     <v-main>
       <v-container>
-        <v-row class="search-section" justify="center">
+        <!-- Přidání načítací animace -->
+        <v-row class="justify-center" v-if="isLoading">
+          <v-col cols="12" md="8" class="d-flex justify-center">
+            <v-progress-circular indeterminate color="primary"></v-progress-circular>
+          </v-col>
+        </v-row>
+        
+        <!-- Obsah se zobrazí, pouze pokud není načítání -->
+        <v-row v-if="!isLoading" class="search-section" justify="center">
           <v-col cols="12" md="8">
             <v-card>
               <v-card-title>
@@ -47,7 +55,7 @@
           </v-col>
         </v-row>
 
-        <v-row v-if="profile" class="profile-section" justify="center">
+        <v-row v-if="profile && !isLoading" class="profile-section" justify="center">
           <v-col cols="12" md="8">
             <v-card>
               <v-card-title>
@@ -68,6 +76,7 @@
   </v-app>
 </template>
 
+
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { getFaceitProfile, getFaceitStats, getFaceitMatchHistory } from '@/pages/CS/faceitService';
@@ -85,7 +94,8 @@ export default defineComponent({
       matchHistory: [] as Match[],
       view: 'stats',
       isMenuOpen: false,
-      errorMessage: ''
+      errorMessage: '',
+      isLoading: false // Přidaný stav načítání
     };
   },
   methods: {
@@ -102,6 +112,7 @@ export default defineComponent({
     async searchProfile() {
       try {
         this.errorMessage = '';
+        this.isLoading = true; // Nastavení načítání na true
         this.profile = await getFaceitProfile(this.nickname);
         console.log('Profile:', this.profile);
         if (this.profile) {
@@ -113,16 +124,21 @@ export default defineComponent({
       } catch (error) {
         console.error('Error fetching profile or stats:', error);
         this.errorMessage = 'Player not found. Please check the nickname and try again.';
+      } finally {
+        this.isLoading = false; // Nastavení načítání na false
       }
     },
     async showMatchHistory() {
       if (this.profile) {
         try {
+          this.isLoading = true; 
           const matchHistory = await getFaceitMatchHistory(this.profile.player_id);
           this.matchHistory = matchHistory;
           console.log('Match history:', this.matchHistory);
         } catch (error) {
           console.error('Error fetching match history:', error);
+        } finally {
+          this.isLoading = false; 
         }
       }
     },
@@ -130,16 +146,15 @@ export default defineComponent({
       this.isMenuOpen = !this.isMenuOpen;
     },
     navigateTo(index: number) {
-      const routes = ['/', '/tft/search', '/counter-strike', '/league-of-legends', '/valorant'];
+      const routes = ['/', '/tft/search', '/counter-strike', '/lol/search', '/valorant'];
       this.$router.push(routes[index]);
     }
   }
 });
 </script>
 
+
 <style scoped>
-
-
 .logo {
   height: 50px;
   margin-left: 10px;

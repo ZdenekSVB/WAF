@@ -1,62 +1,44 @@
 <template>
   <v-app>
-    <AppBar />
-
-    <v-main>
-
-      <div class="search-field">
-        <v-text-field
-          v-model="searchQuery"
-          label="Search"
-          outlined
-          class="mx-auto"
-          dense
-          hide-details
-          @keyup.enter="searchForPlayer"
-        ></v-text-field>
-      </div>
-    </v-main>
-
-    <router-view />
+    <AppBar :currentCategory="'TFT'" />
+    <div class="background"></div>
+    <div class="search-field">
+      <v-text-field
+        v-model="searchQuery"
+        label="Search"
+        outlined
+        dense
+        hide-details
+        @keyup.enter="goToStatsPage"
+      ></v-text-field>
+      <v-btn @click="goToStatsPage">Search</v-btn>
+    </div>
   </v-app>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import axios from 'axios';
+import { useRouter } from 'vue-router';
+import AppBar from '@/components/AppBar.vue';
 
 export default defineComponent({
-  name: 'SearchView',
+  name: 'TFTSearchView',
+  components: {
+    AppBar
+  },
   data() {
     return {
       searchQuery: ''
     };
   },
   methods: {
-    async searchForPlayer() {
-      const API_URL = "http://localhost:3002/api/getPUUID";
-
+    goToStatsPage() {
       if (this.searchQuery.trim() === '') {
-        alert('Please enter a summoner name.');
+        alert('Please enter a search query');
         return;
       }
-
-      try {
-        const [gameName, tagLine] = this.searchQuery.split('#');
-        if (!gameName || !tagLine) {
-          alert('Please enter the full Riot ID in the format: name#tag');
-          return;
-        }
-
-        const response = await axios.get(`${API_URL}/${gameName}/${tagLine}`);
-        const playerData = response.data;
-        console.log(playerData);
-        // Here you can handle the player data, for example redirect to another view or show data in the UI
-      } catch (error) {
-        console.error(error);
-        alert('Error fetching player data. Please try again.');
-      }
-    },
+      this.$router.push({ name: 'TFTStats', query: { search: this.searchQuery } });
+    }
   }
 });
 </script>
@@ -77,8 +59,8 @@ export default defineComponent({
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 10; /* Ensures search bar is above the background */
-  width: 80%; /* Adjust width as needed */
-  max-width: 400px; /* Adjust max-width as needed */
+  z-index: 10;
+  width: 80%;
+  max-width: 400px;
 }
 </style>

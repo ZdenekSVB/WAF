@@ -1,0 +1,23 @@
+[
+    {
+      "match_id": "1",
+      "map": "de_dust2",
+      "results": "Win",
+      "kills": 20,
+      "assists": 5,
+      "deaths": 10,
+      "rating": "1.5",
+      "date": "2024-01-01"
+    },
+    {
+      "match_id": "2",
+      "map": "de_inferno",
+      "results": "Loss",
+      "kills": 15,
+      "assists": 3,
+      "deaths": 12,
+      "rating": "1.2",
+      "date": "2024-01-02"
+    }
+  ]
+  

@@ -1,48 +1,66 @@
 <template>
   <v-app>
-    <AppBar />
+    <AppBar :currentCategory="'TFT'" />
     <v-main>
       <v-container>
         <v-row>
+          <!-- Left Column -->
           <v-col cols="12" md="4">
             <v-card class="text-center">
               <v-card-title>Profile Picture</v-card-title>
-              <v-img :src="profileIconUrl" aspect-ratio="1"></v-img>
+              <v-img :src="profileIconUrl" aspect-ratio="1" v-if="profileIconUrl"></v-img>
+              <v-card-text v-else>
+                No profile picture available
+              </v-card-text>
             </v-card>
           </v-col>
 
+          <!-- Middle Column -->
           <v-col cols="12" md="4">
+            <!-- User Info Card -->
             <v-card class="text-center">
               <v-card-title>User Info</v-card-title>
               <v-card-text>
-                <div>
+                <div v-if="userInfo.name">
                   <div><strong>TagLine:</strong> {{ userInfo.tagLine }}</div>
                   <div><strong>Summoner Name:</strong> {{ userInfo.name }}</div>
                   <div><strong>Summoner Level:</strong> {{ userInfo.summonerLevel }}</div>
                 </div>
+                <div v-else>
+                  No user information available
+                </div>
               </v-card-text>
             </v-card>
+
+            <!-- League Info Card -->
             <v-card class="text-center">
               <v-card-title>League Info</v-card-title>
               <v-card-text>
-                <div v-for="(league, index) in userInfo.leagueData" :key="index">
-                  <div><strong>Queue Type:</strong> {{ league.queueType }}</div>
-                  <div><strong>Tier:</strong> {{ league.tier }}</div>
-                  <div><strong>Rank:</strong> {{ league.rank }}</div>
-                  <div><strong>League Points:</strong> {{ league.leaguePoints }}</div>
-                  <div><strong>Wins:</strong> {{ league.wins }}</div>
-                  <div><strong>Losses:</strong> {{ league.losses }}</div>
-                  <hr/>
+                <div v-if="userInfo.leagueData.length">
+                  <div v-for="(league, index) in userInfo.leagueData" :key="index">
+                    <div><strong>Queue Type:</strong> {{ league.queueType }}</div>
+                    <div><strong>Tier:</strong> {{ league.tier }}</div>
+                    <div><strong>Rank:</strong> {{ league.rank }}</div>
+                    <div><strong>League Points:</strong> {{ league.leaguePoints }}</div>
+                    <div><strong>Wins:</strong> {{ league.wins }}</div>
+                    <div><strong>Losses:</strong> {{ league.losses }}</div>
+                    <hr />
+                  </div>
+                </div>
+                <div v-else>
+                  No league information available
                 </div>
               </v-card-text>
             </v-card>
           </v-col>
 
+          <!-- Right Column -->
           <v-col cols="12" md="4">
+            <!-- Search Card -->
             <v-card class="text-center">
               <v-card-title>Search</v-card-title>
               <v-card-text>
-                <v-text-field
+                <v-text-field v-if="!loading"
                   v-model="searchQuery"
                   label="Search"
                   outlined
@@ -50,95 +68,115 @@
                   hide-details
                   @keyup.enter="searchForPlayer"
                 ></v-text-field>
+                <div v-if="loading">
+                  <v-progress-circular indeterminate size="64"></v-progress-circular>
+                </div>
               </v-card-text>
             </v-card>
+
+            <!-- Summary Card -->
             <v-card class="text-center">
-              <v-card-title>Graph</v-card-title>
+              <v-card-title>Win/Loss Summary</v-card-title>
               <v-card-text>
-                <canvas ref="winLossGraph" class="graph-placeholder"></canvas>
+                <div v-if="loadSummary">
+                  <div><strong>Total Wins:</strong> {{ summaryData.wins }}</div>
+                  <div><strong>Total Losses:</strong> {{ summaryData.losses }}</div>
+                  <div><strong>Win Ratio:</strong> {{ winRatio }}%</div>
+                </div>
+                <div v-else>
+                  No summary data available
+                </div>
               </v-card-text>
             </v-card>
           </v-col>
         </v-row>
 
+        <!-- Recent Games Table -->
         <v-row class="recent-games-table text-center">
           <v-col cols="12">
             <v-card>
               <v-card-title>Recent Games</v-card-title>
               <v-card-text>
-                <v-row class="header-row">
-                  <v-col v-for="(header, index) in recentGamesHeaders" :key="index" cols="1.5">
-                    <div class="header-cell">
-                      {{ header }}
-                    </div>
-                  </v-col>
-                </v-row>
-                <v-row v-for="(row, rowIndex) in recentGamesData" :key="rowIndex">
-                  <v-col v-for="(content, colIndex) in row" :key="colIndex" cols="1.5">
-                    <div class="content-cell">
-                      <div v-if="Array.isArray(content)">
-                        <div v-for="(augment, i) in content" :key="i" class="augment">
-                          <div>{{ formatAugment(augment) }}</div>
+                <div v-if="recentGamesData.length">
+                  <v-row class="header-row">
+                    <v-col v-for="(header, index) in recentGamesHeaders" :key="index" cols="1.5">
+                      <div class="header-cell">{{ header }}</div>
+                    </v-col>
+                  </v-row>
+                  <v-row v-for="(row, rowIndex) in recentGamesData" :key="rowIndex">
+                    <v-col v-for="(content, colIndex) in row" :key="colIndex" cols="1.5">
+                      <div class="content-cell">
+                        <div v-if="Array.isArray(content)">
+                          <div v-for="(augment, i) in content" :key="i" class="augment">
+                            <div>{{ formatAugment(augment) }}</div>
+                          </div>
                         </div>
+                        <div v-else>{{ content }}</div>
                       </div>
-                      <div v-else>
-                        {{ content }}
-                      </div>
-                    </div>
-                  </v-col>
-                </v-row>
+                    </v-col>
+                  </v-row>
+                </div>
+                <div v-else>
+                  No recent games data available
+                </div>
               </v-card-text>
             </v-card>
           </v-col>
         </v-row>
       </v-container>
     </v-main>
-    <router-view />
   </v-app>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, onMounted, ref, computed } from 'vue';
 import axios from 'axios';
-import { Chart, registerables } from 'chart.js';
 import AppBar from '@/components/AppBar.vue';
 
-Chart.register(...registerables);
-
 export default defineComponent({
-  name: 'StatsView',
+  name: 'TFTStatsView',
   components: {
     AppBar
   },
-  data() {
-    return {
-      searchQuery: '',
-      profileIconUrl: '',
-      userInfo: {
-        name: '',
-        summonerLevel: 0,
-        tagLine: '',
-        leagueData: []
-      },
-      recentGamesHeaders: ['Game Number', 'Gold Left', 'Level', 'Placement', 'Players Eliminated', 'Total Damage', 'Augments'],
-      recentGamesData: []
-    };
-  },
-  methods: {
-    async searchForPlayer() {
-      const [name, tag] = this.searchQuery.split('#');
+  setup() {
+    const searchQuery = ref('');
+    const profileIconUrl = ref('');
+    const userInfo = ref({
+      name: '',
+      summonerLevel: 0,
+      tagLine: '',
+      leagueData: []
+    });
+    const recentGamesHeaders = ref(['Game Number', 'Gold Left', 'Level', 'Placement', 'Players Eliminated', 'Total Damage', 'Augments']);
+    const recentGamesData = ref([]);
+    const loading = ref(false);
+    const loadSummary = ref(false);
+    const summaryData = ref({ wins: 0, losses: 0 });
+    const error = ref('');
+
+    const searchForPlayer = async () => {
+      const [name, tag] = searchQuery.value.split('#');
+      loading.value = true;
+      error.value = '';
+
       try {
-        console.log(`Fetching data for ${name}#${tag}`);
+        if (searchQuery.value.length < 1) {
+          alert('Empty Query');
+          return;
+        } else if (!searchQuery.value.includes('#')) {
+          alert('Missing # between Name and TagLine');
+          return;
+        }
+
         const response = await axios.get(`http://localhost:3003/api/summoner/${name}/${tag}`);
-        console.log('Response data:', response.data);
-        this.userInfo.name = response.data.gameName;
-        this.userInfo.summonerLevel = response.data.summonerLevel;
-        this.userInfo.tagLine = response.data.tagLine;
-        this.userInfo.leagueData = response.data.leagueData;
-        this.profileIconUrl = `http://ddragon.leagueoflegends.com/cdn/11.24.1/img/profileicon/${response.data.profileIconId}.png`;
-        
-        // Processing recent games
-        this.recentGamesData = response.data.matchDetails.map((match, index) => {
+
+        userInfo.value.name = response.data.gameName;
+        userInfo.value.summonerLevel = response.data.summonerLevel;
+        userInfo.value.tagLine = response.data.tagLine;
+        userInfo.value.leagueData = response.data.leagueData;
+        profileIconUrl.value = `http://ddragon.leagueoflegends.com/cdn/11.24.1/img/profileicon/${response.data.profileIconId}.png`;
+
+        recentGamesData.value = response.data.matchDetails.map((match, index) => {
           const participant = match.matchDetails.info.participants.find(p => p.puuid === response.data.puuid);
           if (participant) {
             return [
@@ -148,29 +186,29 @@ export default defineComponent({
               participant.placement,
               participant.players_eliminated,
               participant.total_damage_to_players,
-              participant.augments // Only include augment names
+              participant.augments
             ];
           } else {
-            console.error('Participant not found for current user in match:', match.matchId);
             return [];
           }
         });
-
-        // Render win/loss graph
-        this.renderWinLossGraph();
       } catch (error) {
-        console.error('Error fetching player data:', error);
+        error.value = 'Error fetching player data. Please check the summoner name and try again.';
+      } finally {
+        loading.value = false;
+        loadSummaryData();
       }
-    },
-    formatAugment(augment) {
+    };
+
+    const formatAugment = (augment: string) => {
       const parts = augment.split('_');
       const lastPart = parts[parts.length - 1];
       const formatted = lastPart.replace(/([A-Z])/g, ' $1').trim();
       return formatted;
-    },
-    renderWinLossGraph() {
-      const ctx = (this.$refs.winLossGraph as HTMLCanvasElement).getContext('2d');
-      const winLossData = this.userInfo.leagueData.reduce(
+    };
+
+    const loadSummaryData = () => {
+      const winLossData = userInfo.value.leagueData.reduce(
         (acc, league) => {
           acc.wins += league.wins;
           acc.losses += league.losses;
@@ -178,33 +216,38 @@ export default defineComponent({
         },
         { wins: 0, losses: 0 }
       );
+      summaryData.value = winLossData;
+      loadSummary.value = true;
+    };
 
-      new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: ['Wins', 'Losses'],
-          datasets: [
-            {
-              label: 'Win/Loss Ratio',
-              data: [winLossData.wins, winLossData.losses],
-              backgroundColor: ['#4caf50', '#f44336'],
-              borderWidth: 1
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top',
-            },
-            tooltip: {
-              enabled: true,
-            }
-          }
-        }
-      });
-    }
+    const winRatio = computed(() => {
+      const totalGames = summaryData.value.wins + summaryData.value.losses;
+      return totalGames > 0 ? ((summaryData.value.wins / totalGames) * 100).toFixed(2) : '0';
+    });
+
+    onMounted(() => {
+      const search = new URLSearchParams(window.location.search).get('search');
+      if (search) {
+        searchQuery.value = search;
+        searchForPlayer();
+      }
+    });
+
+    return {
+      searchQuery,
+      profileIconUrl,
+      userInfo,
+      recentGamesHeaders,
+      recentGamesData,
+      loading,
+      loadSummary,
+      summaryData,
+      error,
+      searchForPlayer,
+      formatAugment,
+      loadSummaryData,
+      winRatio
+    };
   }
 });
 </script>
@@ -222,11 +265,7 @@ export default defineComponent({
   padding: 8px;
 }
 
-.graph-placeholder {
-  height: 400px;
-}
-
 .recent-games-table .v-card {
-  width: 1200px; /* Increase the width of the table */
+  width: 1200px;
 }
 </style>

@@ -74,7 +74,6 @@ app.get('/api/getMatchHistory/:puuid', async (req, res) => {
     console.log('Match IDs :', matchIds);
 
     const matchDetails = await fetchMatchDetailsWithDelay(matchIds, puuid, ACCOUNT_API_ROUTING_VAL, API_KEY);
-    console.log(`match details: ${matchDetails.data}`)
     res.json(matchDetails);
   } catch (error) {
     console.error('Error fetching match history:', error.response ? error.response.data : error.message);
@@ -121,28 +120,25 @@ async function fetchMatchDetailsWithDelay(matchIds, puuid, ACCOUNT_API_ROUTING_V
   return matchDetails;
 }
 
-/*
-// Endpoint for fetching stats by Summoner ID
-app.get('/api/getStats/:summonerId', async (req, res) => {
+// Endpoint for fetching league entries by Summoner ID
+app.get('/api/getLeagueEntries/:summonerId', async (req, res) => {
   const { summonerId } = req.params;
   try {
-      const response = await axios.get(`${SUMMONER_API_ROUTING_VAL}/lol/league/v4/entries/by-summoner/${summonerId})`, {
+      console.log(`Fetching league entries for Summoner ID: ${summonerId}`);
+      const response = await axios.get(`${SUMMONER_API_ROUTING_VAL}/lol/league/v4/entries/by-summoner/${summonerId}`, {
           headers: {
               'X-Riot-Token': API_KEY
           }
       });
-
-      // Filter out "CHERRY" queue type
-    const filteredData = response.data.filter(entry => entry.queueType !== "CHERRY");
-
-
-      res.json(filteredData);
+      console.log('League entries response:', response.data);
+      res.json(response.data);
   } catch (error) {
-      console.error('Error fetching Stats:', error.response ? error.response.data : error.message);
-      res.status(500).json({ error: 'Error fetching Stats', details: error.response ? error.response.data : error.message });
+      console.error('Error fetching league entries:', error.response ? error.response.data : error.message);
+      res.status(500).json({ error: 'Error fetching league entries', details: error.response ? error.response.data : error.message });
   }
 });
-*/
+
+
 
 const FACEIT_API_KEY = '70e13787-dfaa-4e89-8e92-fde2a100d028';
 const FACEIT_API_URL = 'https://open.faceit.com/data/v4';

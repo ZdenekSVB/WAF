@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { LolAccountData } from '@/types/index';
+import { LolAccountData, LolAccountStats } from '@/types/index';
 
 
 export const fetchUserData = async (gameName: string, tagLine: string): Promise<LolAccountData | null> => {
@@ -17,19 +17,19 @@ export const fetchUserData = async (gameName: string, tagLine: string): Promise<
             
             const profileIconURL = `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/${summonerData.profileIconId}.jpg`;
             
-           /* const statsDataResponse = await axios.get(`http://localhost:3002/api/getStats/${summonerData.id}`);
-            const allStatsData: LolAccountStats[] = statsDataResponse.data; 
-
-            // Calculate winrate for each queue type
-            const statsWithWinrate = allStatsData.map(entry => {
-            const totalGames = entry.wins + entry.losses;
-            const winrate = totalGames > 0 ? (entry.wins / totalGames) * 100 : 0;
-            return { ...entry, winrate: parseFloat(winrate.toFixed(2)) };
-            });*/
-
             console.log('Fetching match history');
             const matchHistoryResponse = await axios.get(`http://localhost:3002/api/getMatchHistory/${playerData.puuid}`);
             const matchHistory = matchHistoryResponse.data;
+
+            const statsDataResponse = await axios.get(`http://localhost:3002/api/getLeagueEntries/${summonerData.id}`);
+            const allStatsData: LolAccountStats[] = statsDataResponse.data;
+
+            // Calculate winrate for each queue type
+            const statsWithWinrate = allStatsData.map(entry => {
+              const totalGames = entry.wins + entry.losses;
+              const winrate = totalGames > 0 ? (entry.wins / totalGames) * 100 : 0;
+              return { ...entry, winrate: parseFloat(winrate.toFixed(2)) };
+            });
 
             console.log(`puuid: ${summonerData.id}`)
             
@@ -39,7 +39,8 @@ export const fetchUserData = async (gameName: string, tagLine: string): Promise<
                 summonerLevel: summonerData.summonerLevel,
                 profileIconId: summonerData.profileIconId,
                 profileIconURL: profileIconURL,
-                matchHistory: matchHistory
+                matchHistory: matchHistory,
+                stats: statsWithWinrate
             };
             console.log('Final LolAccountData:', lolAccountData);
             return lolAccountData;
