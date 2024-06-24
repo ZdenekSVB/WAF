@@ -146,7 +146,7 @@ export default defineComponent({
       this.isMenuOpen = !this.isMenuOpen;
     },
     navigateTo(index: number) {
-      const routes = ['/', '/tft/search', '/counter-strike', '/league-of-legends', '/valorant'];
+      const routes = ['/', '/tft/search', '/counter-strike', '/lol/search', '/valorant'];
       this.$router.push(routes[index]);
     }
   }
