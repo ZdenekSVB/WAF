@@ -9,13 +9,13 @@
             <v-card class="text-center">
               <v-card-title>Summoner Info</v-card-title>
               <v-card-text>
-                <v-text-field v-model="name" label="Summoner Name" outlined dense></v-text-field>
-                <v-text-field v-model="tag" label="Tag" outlined dense></v-text-field>
+                <v-text-field v-model="name" label="Summoner Name" outlined dense data-cy="input-name"></v-text-field>
+                <v-text-field v-model="tag" label="Tag" outlined dense data-cy="input-tag"></v-text-field>
 
-                <v-btn v-if="!loading" @click="fetchSummonerData" color="primary">Fetch Data</v-btn>
-                <div v-if="loading">
-    <v-progress-circular indeterminate size="64"></v-progress-circular>
-  </div>
+                <v-btn v-if="!loading" @click="fetchSummonerData" color="primary" data-cy="fetch-button">Fetch Data</v-btn>
+                <div v-if="loading" data-cy="loading-indicator">
+                  <v-progress-circular indeterminate size="64"></v-progress-circular>
+                </div>
               </v-card-text>
             </v-card>
           </v-col>
@@ -32,18 +32,16 @@
                   <div><strong>Summoner Name:</strong> {{ info.name }}</div>
                   <div><strong>Summoner Level:</strong> {{ info.summonerLevel }}</div>
                 </div>
-                <v-btn @click="editUserInfo(index)" color="primary">Edit</v-btn>
-                <v-btn @click="deleteUserInfo(index)" color="error">Delete</v-btn>
+                <v-btn @click="editUserInfo(index)" color="primary" data-cy="edit-button">Edit</v-btn>
+                <v-btn @click="deleteUserInfo(index)" color="error" data-cy="delete-button">Delete</v-btn>
               </v-card-text>
             </v-card>
           </v-col>
         </v-row>
-        
       </v-container>
     </v-main>
   </v-app>
 </template>
-
 
 <script lang="ts">
 import { defineComponent } from 'vue';
@@ -58,8 +56,8 @@ export default defineComponent({
   data() {
     return {
       name: '',
-      loading: false,
       tag: '',
+      loading: false,
       userInfo: {
         name: '',
         summonerLevel: 0,
@@ -69,8 +67,22 @@ export default defineComponent({
     };
   },
   methods: {
+    validateInputs() {
+      const validTag = ['EUN1', 'EUW1', 'BR1', 'JP1', 'KR', 'LA1', 'LA2', 'NA1', 'OC1', 'TR1', 'RU', 'PH2', 'SG2', 'TH2', 'TW2', 'VN2'];
+      if (!this.name.trim()) {
+        alert('Summoner Name cannot be empty');
+        return false;
+      }
+      if (!validTag.includes(this.tag)) {
+        alert('Invalid tag. Please enter a valid tag');
+        return false;
+      }
+      return true;
+    },
     async fetchSummonerData() {
-      this.loading=true
+      if (!this.validateInputs()) return;
+
+      this.loading = true;
       try {
         const response = await axios.get(`http://localhost:3003/api/summoner/${this.name}/${this.tag}`);
         this.userInfo.name = response.data.gameName;
@@ -78,44 +90,40 @@ export default defineComponent({
         this.userInfo.tagLine = response.data.tagLine;
         this.saveUserInfo({ ...this.userInfo }); // Save initial fetch as first edited version
       } catch (error) {
+        alert('Summoner not found. Please enter a valid summoner name and tag.');
         console.error('Error fetching summoner data:', error);
-      }
-      finally{
-        this.loading=false
+      } finally {
+        this.loading = false;
       }
     },
     editUserInfo(index) {
-      this.loading=true
+      this.loading = true;
       try {
-      const editedInfo = this.editedUserInfos[index];
-      editedInfo.tagLine = prompt('Enter new Tag:', editedInfo.tagLine) || editedInfo.tagLine;
-      editedInfo.name = prompt('Enter new Name:', editedInfo.name) || editedInfo.name;
-      editedInfo.summonerLevel = prompt('Enter new Level:', editedInfo.summonerLevel) || editedInfo.summonerLevel;
-      // Implement similar editing for other fields like tagLine, summonerLevel
-      this.saveUserInfo(editedInfo);
-    } catch (error) {
-        console.error('Error fetching summoner data:', error);
-      }
-      finally{
-        this.loading=false
+        const editedInfo = this.editedUserInfos[index];
+        editedInfo.tagLine = prompt('Enter new Tag:', editedInfo.tagLine) || editedInfo.tagLine;
+        editedInfo.name = prompt('Enter new Name:', editedInfo.name) || editedInfo.name;
+        editedInfo.summonerLevel = prompt('Enter new Level:', editedInfo.summonerLevel) || editedInfo.summonerLevel;
+        this.saveUserInfo(editedInfo);
+      } catch (error) {
+        console.error('Error editing summoner data:', error);
+      } finally {
+        this.loading = false;
       }
     },
     saveUserInfo(userInfo) {
-      this.loading=true
+      this.loading = true;
       try {
-      // Check if userInfo already exists in editedUserInfos (edit scenario)
-      const existingIndex = this.editedUserInfos.findIndex(info => info.name === userInfo.name);
-      if (existingIndex !== -1) {
-        this.editedUserInfos[existingIndex] = { ...userInfo };
-      } else {
-        this.editedUserInfos.push({ ...userInfo });
-      }
-      localStorage.setItem('editedUserInfos', JSON.stringify(this.editedUserInfos));
-    } catch (error) {
-        console.error('Error fetching summoner data:', error);
-      }
-      finally{
-        this.loading=false
+        const existingIndex = this.editedUserInfos.findIndex(info => info.name === userInfo.name);
+        if (existingIndex !== -1) {
+          this.editedUserInfos[existingIndex] = { ...userInfo };
+        } else {
+          this.editedUserInfos.push({ ...userInfo });
+        }
+        localStorage.setItem('editedUserInfos', JSON.stringify(this.editedUserInfos));
+      } catch (error) {
+        console.error('Error saving summoner data:', error);
+      } finally {
+        this.loading = false;
       }
     },
     deleteUserInfo(index) {
@@ -123,18 +131,17 @@ export default defineComponent({
       localStorage.setItem('editedUserInfos', JSON.stringify(this.editedUserInfos));
     },
     loadUserInfos() {
-      this.loading=true
+      this.loading = true;
       try {
-      const savedUserInfos = localStorage.getItem('editedUserInfos');
-      if (savedUserInfos) {
-        this.editedUserInfos = JSON.parse(savedUserInfos);
+        const savedUserInfos = localStorage.getItem('editedUserInfos');
+        if (savedUserInfos) {
+          this.editedUserInfos = JSON.parse(savedUserInfos);
+        }
+      } catch (error) {
+        console.error('Error loading summoner data:', error);
+      } finally {
+        this.loading = false;
       }
-    }catch (error){
-      console.error('Error loading summoner data:', error);
-    }
-    finally{
-this.loading=false
-    }
     }
   },
   mounted() {

@@ -99,7 +99,9 @@ app.get('/api/leaderboard/:region/:tier/:division', async (req, res) => {
 
   try {
     const leagueResponse = await axios.get(leagueUrl);
-    const players = leagueResponse.data.slice(0, 10);
+    const players = leagueResponse.data.slice(0, 20);
+    
+    console.log('League Data Response:', leagueResponse.data);
     
     const summonerPromises = players.map(async player => {
       const summonerUrl = `https://europe.api.riotgames.com/riot/account/v1/accounts/by-puuid/${player.puuid}?api_key=${RIOT_API_KEY}`;
