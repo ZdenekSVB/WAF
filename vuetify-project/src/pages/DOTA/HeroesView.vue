@@ -11,6 +11,7 @@
               label="Search by Name"
               outlined
               dense
+              @click:clear="clearSearch"
               clearable
             ></v-text-field>
             <v-data-table
@@ -29,6 +30,9 @@
                 ></v-img>
                 <span v-else>No Image</span>
               </template>
+              <template v-slot:item.roles="{ item }">
+                <span>{{ formatRoles(item.roles) }}</span>
+              </template>
               <template v-slot:item.action="{ item }">
                 <v-btn @click="addToFavorites(item)" color="primary">Add to Favorites</v-btn>
               </template>
@@ -41,14 +45,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, computed } from 'vue';
+import { useFavoriteHeroesStore } from '@/stores/favoriteHeroesStore';
 import axios from 'axios';
 import AppBar from '@/components/AppBar.vue';
 
 export default defineComponent({
   name: 'HeroStats',
   components: {
-    AppBar
+    AppBar,
   },
   data() {
     return {
@@ -59,43 +64,45 @@ export default defineComponent({
         { title: 'Name', value: 'localized_name' },
         { title: 'Primary Attribute', value: 'primary_attr' },
         { title: 'Attack Type', value: 'attack_type' },
-        { title: 'Roles', value: 'roles' },
+        { title: 'Roles', value: 'roles', sortable: false }, // Updated to handle roles
         { title: 'Base Health', value: 'base_health' },
         { title: 'Base Mana', value: 'base_mana' },
         { title: 'Base Armor', value: 'base_armor' },
         { title: 'Base Attack', value: 'base_attack_min' },
         { title: 'Attack Range', value: 'attack_range' },
         { title: 'Move Speed', value: 'move_speed' },
-        { title: 'Action', value: 'action', sortable: false }
+        { title: 'Action', value: 'action', sortable: false },
       ],
     };
   },
   computed: {
     filteredHeroes() {
       // Filter heroes based on search string
-      return this.heroes.filter(hero =>
+      return this.heroes.filter((hero) =>
         hero.localized_name.toLowerCase().includes(this.search.toLowerCase())
       );
     },
   },
   methods: {
     addToFavorites(hero) {
-      let favorites = JSON.parse(localStorage.getItem('favoriteHeroes') || '[]');
-      if (!favorites.some(fav => fav.id === hero.id)) {
-        favorites.push(hero);
-        localStorage.setItem('favoriteHeroes', JSON.stringify(favorites));
-        alert(`${hero.localized_name} has been added to your favorites.`);
-      } else {
-        alert(`${hero.localized_name} is already in your favorites.`);
-      }
-    }
+      const favoriteHeroesStore = useFavoriteHeroesStore();
+      favoriteHeroesStore.addToFavorites(hero);
+    },
+    clearSearch() {
+      // Clear the search text when clear icon is clicked
+      this.search = '';
+    },
+    formatRoles(roles) {
+      // Format roles as a comma-separated list
+      return roles.join(', ');
+    },
   },
   async created() {
     try {
       const response = await axios.get('https://api.opendota.com/api/heroStats');
-      this.heroes = response.data.map(hero => ({
+      this.heroes = response.data.map((hero) => ({
         ...hero,
-        img: `https://cdn.cloudflare.steamstatic.com${hero.img}`
+        img: `https://cdn.cloudflare.steamstatic.com${hero.img}`,
       }));
     } catch (error) {
       console.error('Error fetching hero data:', error);
@@ -103,6 +110,7 @@ export default defineComponent({
   },
 });
 </script>
+
 
 <style scoped>
 .heroes-card {

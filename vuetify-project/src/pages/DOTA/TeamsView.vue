@@ -12,6 +12,7 @@
               outlined
               dense
               clearable
+              @click:clear="clearSearch"
             ></v-text-field>
             <v-data-table
               :headers="headers"
@@ -110,6 +111,10 @@ export default defineComponent({
       } catch (error) {
         console.error('Error fetching team data:', error);
       }
+    },
+    clearSearch() {
+      // Clear the search text when clear icon is clicked
+      this.search = '';
     }
   },
   created() {
