@@ -25,7 +25,7 @@ export const getFaceitStats = async (player_id) => {
 export const getFaceitMatchHistory = async (player_id) => {
   try {
     const response = await axios.get(`${API_URL}/getFaceitMatches/${player_id}`);
-    console.log('Match history response:', response.data);  // Add this line
+    console.log('Match history response:', response.data);  
     return response.data;
   } catch (error) {
     console.error('Error fetching FACEIT match history:', error);

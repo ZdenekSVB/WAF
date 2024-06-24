@@ -18,11 +18,28 @@
     <div v-else>
       <p data-cy="loading-elo">Loading ELO data...</p>
     </div>
+
+    <!-- Comparison Input Section -->
+    <div class="compare-input">
+      <input v-model="comparisonNickname" type="text" placeholder="Enter nickname to compare" />
+      <button @click="compareElo">Compare</button>
+    </div>
+    
+    <!-- Comparison Section -->
+    <div class="compare-section" v-if="comparisonElo !== null">
+      <h3>Comparison with {{ comparisonProfile.nickname }}</h3>
+      <p>{{ profile.nickname }}'s Elo: {{ elo }}</p>
+      <p>{{ comparisonProfile.nickname }}'s Elo: {{ comparisonElo }}</p>
+      <div class="elo-bar">
+        <div class="elo-bar-fill" :style="{ width: comparisonProgressBarWidth }" data-cy="comparison-elo-bar-fill"></div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue';
+import { getFaceitProfile } from './faceitService';
 
 export default defineComponent({
   name: 'EloView',
@@ -34,6 +51,9 @@ export default defineComponent({
   },
   setup(props) {
     const elo = ref<number | null>(null);
+    const comparisonElo = ref<number | null>(null);
+    const comparisonProfile = ref<any | null>(null);
+    const comparisonNickname = ref<string>('');
     const levels = ref([
       { number: 1, range: [100, 500], image: '/src/assets/lvl/1.png' },
       { number: 2, range: [501, 750], image: '/src/assets/lvl/2.png' },
@@ -53,6 +73,22 @@ export default defineComponent({
       console.log('ELO in EloView:', elo.value);
     });
 
+    const fetchComparisonProfile = async (nickname: string) => {
+      try {
+        const profile = await getFaceitProfile(nickname);
+        comparisonProfile.value = profile;
+        comparisonElo.value = profile.games?.cs2?.faceit_elo || 0;
+      } catch (error) {
+        console.error('Error fetching comparison profile:', error);
+      }
+    };
+
+    const compareElo = () => {
+      if (comparisonNickname.value) {
+        fetchComparisonProfile(comparisonNickname.value);
+      }
+    };
+
     const level = computed(() => {
       console.log('Calculating level for ELO:', elo.value);
       const currentLevel = levels.value.find(l => elo.value! >= l.range[0] && elo.value! <= l.range[1]);
@@ -68,19 +104,31 @@ export default defineComponent({
       const nextLevel = levels.value[currentLevelIndex + 1];
       const range = nextLevel.range[0] - currentLevel.range[0];
       const progress = ((elo.value! - currentLevel.range[0]) / range) * 10 + (currentLevelIndex * 10);
-      console.log('Progress bar calculation:');
-      console.log('Current level:', currentLevel);
-      console.log('Next level:', nextLevel);
-      console.log('Range:', range);
-      console.log('Progress:', progress);
+      return `${progress}%`;
+    });
+
+    const comparisonProgressBarWidth = computed(() => {
+      if (comparisonElo.value! >= 2001) {
+        return '100%';
+      }
+      const currentLevelIndex = levels.value.findIndex(l => comparisonElo.value! >= l.range[0] && comparisonElo.value! <= l.range[1]);
+      const currentLevel = levels.value[currentLevelIndex];
+      const nextLevel = levels.value[currentLevelIndex + 1];
+      const range = nextLevel.range[0] - currentLevel.range[0];
+      const progress = ((comparisonElo.value! - currentLevel.range[0]) / range) * 10 + (currentLevelIndex * 10);
       return `${progress}%`;
     });
 
     return {
       elo,
+      comparisonElo,
+      comparisonProfile,
+      comparisonNickname,
       levels,
       level,
       progressBarWidth,
+      comparisonProgressBarWidth,
+      compareElo
     };
   }
 });
@@ -127,5 +175,41 @@ export default defineComponent({
 .level-image {
   width: 50px;
   height: 50px;
+}
+
+/* Comparison Input Section */
+.compare-input {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.compare-input input {
+  padding: 5px;
+  margin-right: 10px;
+}
+
+.compare-input button {
+  padding: 5px 10px;
+}
+
+/* Comparison Section */
+.compare-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #ccc;
+}
+
+.compare-section h3 {
+  text-align: center;
+}
+
+.compare-section p {
+  text-align: center;
+  margin: 5px 0;
+}
+
+.compare-section .elo-bar {
+  margin: 10px auto;
+  width: 80%;
 }
 </style>

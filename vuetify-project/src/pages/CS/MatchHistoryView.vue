@@ -1,7 +1,25 @@
 <template>
   <div class="match-history" data-cy="match-history">
     <h3>Match history</h3>
-    <div v-for="match in matchHistory" :key="match.match_id" class="match-card" data-cy="match-card">
+    <v-row>
+      <v-col>
+        <v-select
+          v-model="filterCriteria"
+          :items="filterOptions"
+          label="Filter by"
+          outlined
+        ></v-select>
+      </v-col>
+      <v-col>
+        <v-select
+          v-model="sortCriteria"
+          :items="sortOptions"
+          label="Sort by"
+          outlined
+        ></v-select>
+      </v-col>
+    </v-row>
+    <div v-for="match in filteredAndSortedMatches" :key="match.match_id" class="match-card" @click="openMatchDetails(match)" data-cy="match-card">
       <div class="map-container" data-cy="map-container">
         <img :src="`/src/assets/maps/${match.map}.png`" alt="Map Image" class="map-image" data-cy="map-image">
         <p data-cy="map-name">{{ match.map }}</p>
@@ -13,11 +31,28 @@
         <p data-cy="match-date">Date: {{ match.date }}</p>
       </div>
     </div>
+    <v-dialog v-model="isDialogOpen" max-width="600px">
+      <v-card>
+        <v-card-title>Match Details</v-card-title>
+        <v-card-text>
+          <p>Map: {{ selectedMatch.map }}</p>
+          <p>Result: {{ selectedMatch.results }}</p>
+          <p>Kills: {{ selectedMatch.kills }}</p>
+          <p>Assists: {{ selectedMatch.assists }}</p>
+          <p>Deaths: {{ selectedMatch.deaths }}</p>
+          <p>Rating: {{ selectedMatch.rating }}</p>
+          <p>Date: {{ selectedMatch.date }}</p>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="isDialogOpen = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType, ref, computed } from 'vue';
 
 export default defineComponent({
   name: 'MatchHistoryView',
@@ -31,17 +66,53 @@ export default defineComponent({
       required: true
     }
   },
-  methods: {
-    logMapSrc(map: string) {
-      console.log('Map:', map);
-    }
-  },
-  watch: {
-    matchHistory(newMatchHistory) {
-      newMatchHistory.forEach(match => {
-        this.logMapSrc(match.map);
-      });
-    }
+  setup(props) {
+    const filterCriteria = ref('');
+    const sortCriteria = ref('');
+    const isDialogOpen = ref(false);
+    const selectedMatch = ref<Match | null>(null);
+
+    const filterOptions = ['All', 'Win', 'Loss'];
+    const sortOptions = ['Date', 'Kills', 'Rating'];
+
+    const filteredAndSortedMatches = computed(() => {
+      let matches = props.matchHistory;
+
+      if (filterCriteria.value) {
+        matches = matches.filter(match => {
+          if (filterCriteria.value === 'Win') return match.results === 'Win';
+          if (filterCriteria.value === 'Loss') return match.results === 'Loss';
+          return true;
+        });
+      }
+
+      if (sortCriteria.value) {
+        matches = matches.sort((a, b) => {
+          if (sortCriteria.value === 'Date') return new Date(b.date) - new Date(a.date);
+          if (sortCriteria.value === 'Kills') return b.kills - a.kills;
+          if (sortCriteria.value === 'Rating') return b.rating - a.rating;
+          return 0;
+        });
+      }
+
+      return matches;
+    });
+
+    const openMatchDetails = (match: Match) => {
+      selectedMatch.value = match;
+      isDialogOpen.value = true;
+    };
+
+    return {
+      filterCriteria,
+      sortCriteria,
+      filterOptions,
+      sortOptions,
+      filteredAndSortedMatches,
+      isDialogOpen,
+      selectedMatch,
+      openMatchDetails
+    };
   }
 });
 </script>
@@ -64,6 +135,7 @@ export default defineComponent({
   border-radius: 10px;
   margin-bottom: 10px;
   border: 1px solid #444;
+  cursor: pointer; /* Přidání ukazatele kurzoru */
 }
 
 .map-container {

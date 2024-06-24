@@ -196,7 +196,7 @@ app.get('/api/getFaceitStats/:playerId', async (req, res) => {
 app.get('/api/getFaceitMatches/:playerId', async (req, res) => {
   const { playerId } = req.params;
   try {
-    const response = await axios.get(`${FACEIT_API_URL}/players/${playerId}/games/cs2/stats?offset=0&limit=10`, {
+    const response = await axios.get(`${FACEIT_API_URL}/players/${playerId}/games/cs2/stats?offset=0&limit=20`, {
       headers: {
         Authorization: `Bearer ${FACEIT_API_KEY}`
       }
