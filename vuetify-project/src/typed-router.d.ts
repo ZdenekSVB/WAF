@@ -39,6 +39,7 @@ declare module 'vue-router/auto-routes' {
     '/LOL/AccountView': RouteRecordInfo<'/LOL/AccountView', '/LOL/AccountView', Record<never, never>, Record<never, never>>,
     '/LOL/ChampionsView': RouteRecordInfo<'/LOL/ChampionsView', '/LOL/ChampionsView', Record<never, never>, Record<never, never>>,
     '/LOL/LOLSearchView': RouteRecordInfo<'/LOL/LOLSearchView', '/LOL/LOLSearchView', Record<never, never>, Record<never, never>>,
+    '/LOL/SpecificChampionView': RouteRecordInfo<'/LOL/SpecificChampionView', '/LOL/SpecificChampionView', Record<never, never>, Record<never, never>>,
     '/TFT/BuffNerfView': RouteRecordInfo<'/TFT/BuffNerfView', '/TFT/BuffNerfView', Record<never, never>, Record<never, never>>,
     '/TFT/RankingView': RouteRecordInfo<'/TFT/RankingView', '/TFT/RankingView', Record<never, never>, Record<never, never>>,
     '/TFT/SearchView': RouteRecordInfo<'/TFT/SearchView', '/TFT/SearchView', Record<never, never>, Record<never, never>>,
