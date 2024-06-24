@@ -1,25 +1,22 @@
 <template>
   <v-app>
-    <AppBar />
+    <AppBar :currentCategory="'LOL'"/>
     <v-main>
       <v-container>
         <v-row>
           <v-col cols="12" md="4">
             <v-card>
               <v-card-title>Profile Picture</v-card-title>
-              <v-img :src="userInfo?.profileIconURL" aspect-ratio="1" :error-src="defaultImageURL"></v-img>
+              <v-img :src="userInfo.profileIconURL" aspect-ratio="1"></v-img>
             </v-card>
           </v-col>
           <v-col cols="12" md="4">
             <v-card>
               <v-card-title>User Info</v-card-title>
               <v-card-text>
-                <div v-if="userInfo">
+                <div>
                   <div><strong>Summoner Name:</strong> {{ userInfo.name }}</div>
                   <div><strong>Summoner Level:</strong> {{ userInfo.summonerLevel }}</div>
-                </div>
-                <div v-else>
-                  Loading user data...
                 </div>
               </v-card-text>
             </v-card>
@@ -47,7 +44,7 @@
               <v-card-text>
                 <v-row>
                   <v-col cols="4">
-                    <v-img v-if="stat.tier" :src="rankIcon(stat.tier)" aspect-ratio="1" :error-src="defaultImageURL"></v-img>
+                    <v-img v-if="stat.tier" :src="rankIcon(stat.tier)" aspect-ratio="1"></v-img>
                   </v-col>
                   <v-col cols="8">
                     <div>
@@ -73,7 +70,7 @@
                     <v-progress-circular indeterminate color="primary"></v-progress-circular>
                   </v-col>
                 </v-row>
-                <v-row v-else v-for="(match, index) in userInfo?.matchHistory" :key="index">
+                <v-row v-else v-for="(match, index) in userInfo.matchHistory" :key="index">
                   <v-col cols="12">
                     <v-card :class="{'win-background': match.win, 'loss-background': !match.win}">
                       <v-card-title>Match ID: {{ match.matchId }}</v-card-title>
@@ -89,6 +86,11 @@
                     </v-card>
                   </v-col>
                 </v-row>
+                <v-row v-if="!loadingMatches">
+                  <v-col cols="12" class="text-center">
+                    <v-btn @click="loadMoreMatches" color="primary">Load More Matches</v-btn>
+                  </v-col>
+                </v-row>
               </v-card-text>
             </v-card>
           </v-col>
@@ -99,14 +101,36 @@
   </v-app>
 </template>
 
-
-
-
 <script lang="ts">
 import { defineComponent, computed, ref } from 'vue';
 import { useLolStore } from '@/stores/lolStore';
-import { fetchUserData } from '@/pages/LOL/lolService';
+import { fetchUserData, fetchMoreMatchHistory } from '@/pages/LOL/lolService';
 import AppBar from '@/components/AppBar.vue';
+
+// Import rank icons
+import BronzeIcon from '@/assets/lolranks/Rank=Bronze.png';
+import SilverIcon from '@/assets/lolranks/Rank=Silver.png';
+import GoldIcon from '@/assets/lolranks/Rank=Gold.png';
+import IronIcon from '@/assets/lolranks/Rank=Iron.png';
+import PlatinumIcon from '@/assets/lolranks/Rank=Platinum.png';
+import EmeraldIcon from '@/assets/lolranks/Rank=Emerald.png';
+import DiamondIcon from '@/assets/lolranks/Rank=Diamond.png';
+import MasterIcon from '@/assets/lolranks/Rank=Master.png';
+import GrandmasterIcon from '@/assets/lolranks/Rank=Grandmaster.png';
+import ChallengerIcon from '@/assets/lolranks/Rank=Challenger.png';
+
+const rankIcons: Record<string, string> = {
+  Bronze: BronzeIcon,
+  Silver: SilverIcon,
+  Gold: GoldIcon,
+  Iron: IronIcon,
+  Platinum: PlatinumIcon,
+  Emerald: EmeraldIcon,
+  Diamond: DiamondIcon,
+  Master: MasterIcon,
+  Grandmaster: GrandmasterIcon,
+  Challenger: ChallengerIcon
+};
 
 export default defineComponent({
   name: 'LOLAccountView',
@@ -119,6 +143,7 @@ export default defineComponent({
 
     const searchQuery = ref('');
     const loadingMatches = ref(false);
+    const matchStartIndex = ref(20); // This will keep track of the starting index for the next batch of matches
 
     const searchForPlayer = async () => {
       const [gameName, tagLine] = searchQuery.value.split('#');
@@ -146,22 +171,22 @@ export default defineComponent({
     };
 
     const rankIcon = (tier: string) => {
-      try {
-        return new URL(``, import.meta.url).href;
-      } catch (e) {
-        console.error('Error loading rank icon:', e);
-        return new URL('../assets/default.png', import.meta.url).href;
-      }
+      return rankIcons[tier] || '';
     };
 
-    const defaultImageURL = new URL('../assets/default.png', import.meta.url).href;
-
     const filteredStats = computed(() => {
-      if (userInfo.value && userInfo.value.stats) {
-        return userInfo.value.stats.filter(stat => stat.queueType !== 'CHERRY');
-      }
-      return [];
+      return userInfo.value.stats.filter(stat => stat.queueType !== 'CHERRY');
     });
+
+    const loadMoreMatches = async () => {
+      loadingMatches.value = true;
+      const moreMatches = await fetchMoreMatchHistory(userInfo.value.puuid, matchStartIndex.value);
+      if (moreMatches.length) {
+        lolStore.addMatchHistory(moreMatches);
+        matchStartIndex.value += 20; // Increment the start index for the next batch of matches
+      }
+      loadingMatches.value = false;
+    };
 
     return {
       userInfo,
@@ -170,17 +195,12 @@ export default defineComponent({
       searchForPlayer,
       getQueueTypeDisplayName,
       rankIcon,
-      defaultImageURL,
-      filteredStats
+      filteredStats,
+      loadMoreMatches
     };
   }
 });
 </script>
-
-
-
-
-
 
 <style scoped>
 .win-background {

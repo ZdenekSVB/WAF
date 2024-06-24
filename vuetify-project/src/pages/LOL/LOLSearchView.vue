@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <AppBar />
+    <AppBar :currentCategory="'LOL'"/>
     <v-main>
       <v-img class="background" alt="Background" />
       <div class="search-field">
