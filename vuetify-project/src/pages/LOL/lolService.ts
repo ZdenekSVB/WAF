@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { LolAccountData, LolAccountStats } from '@/types/index';
+import { LolAccountData, LolAccountStats, MatchDetails } from '@/types/index';
 
 
 export const fetchUserData = async (gameName: string, tagLine: string): Promise<LolAccountData | null> => {
@@ -53,4 +53,15 @@ export const fetchUserData = async (gameName: string, tagLine: string): Promise<
         alert('Error fetching player data. Please try again.');
         return null;
     }
+};
+
+export const fetchMoreMatchHistory = async (puuid: string, start: number): Promise<MatchDetails[]> => {
+  const API_URL = `http://localhost:3002/api/getMatchHistory/${puuid}?start=${start}&count=20`;
+  try {
+    const response = await axios.get(API_URL);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching more match history:', error);
+    return [];
+  }
 };

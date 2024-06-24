@@ -62,9 +62,10 @@ app.get('/api/getSummonerData/:puuid', async (req, res) => {
 // Endpoint for fetching match history by PUUID
 app.get('/api/getMatchHistory/:puuid', async (req, res) => {
   const { puuid } = req.params;
+  const { start = 0 } = req.query;
   try {
     console.log(`Fetching match history for PUUID: ${puuid}`);
-    const matchIdsResponse = await axios.get(`${ACCOUNT_API_ROUTING_VAL}/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=20`, {
+    const matchIdsResponse = await axios.get(`${ACCOUNT_API_ROUTING_VAL}/lol/match/v5/matches/by-puuid/${puuid}/ids?start=${start}&count=20`, {
       headers: {
         'X-Riot-Token': API_KEY
       }
