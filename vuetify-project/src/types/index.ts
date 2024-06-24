@@ -54,6 +54,8 @@ export interface ParticipantDto {
   puuid: string;
 }
 
-
-
-  
+export interface Champion {
+  id: number;
+  name: string;
+  iconURL: string;
+}
