@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <NavBar />
+    <AppBar :currentCategory="'DOTA'"/>
     <v-main>
       <v-container>
         <v-card class="teams-card" elevation="2">
@@ -48,7 +48,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import axios from 'axios';
-import NavBar from '@/pages/DOTA/NavBar.vue';
+import AppBar from '@/components/AppBar.vue';
 import { useRouter } from 'vue-router';
 
 interface Team {
@@ -65,21 +65,21 @@ interface Team {
 export default defineComponent({
   name: 'TeamStats',
   components: {
-    NavBar
+    AppBar
   },
   data() {
     return {
       teams: [] as Team[],
       search: '', // Initialize search string
       headers: [
-        { text: 'Logo', value: 'logo_url' },
-        { text: 'Rating', value: 'rating' },
-        { text: 'Wins', value: 'wins' },
-        { text: 'Losses', value: 'losses' },
-        { text: 'Win Rate', value: 'winrate' },
-        { text: 'Name', value: 'name' },
-        { text: 'Tag', value: 'tag' },
-        { text: 'Actions', value: 'actions', sortable: false }
+        { title: 'Logo', value: 'logo_url' },
+        { title: 'Rating', value: 'rating' },
+        { title: 'Wins', value: 'wins' },
+        { title: 'Losses', value: 'losses' },
+        { title: 'Win Rate', value: 'winrate' },
+        { title: 'Name', value: 'name' },
+        { title: 'Tag', value: 'tag' },
+        { title: 'Actions', value: 'actions', sortable: false }
       ]
     };
   },

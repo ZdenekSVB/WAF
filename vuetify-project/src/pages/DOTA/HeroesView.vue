@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <NavBar />
+    <AppBar :currentCategory="'DOTA'"/>
     <v-main>
       <v-container>
         <v-card class="heroes-card" elevation="2">
@@ -43,12 +43,12 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import axios from 'axios';
-import NavBar from '@/pages/DOTA/NavBar.vue';
+import AppBar from '@/components/AppBar.vue';
 
 export default defineComponent({
   name: 'HeroStats',
   components: {
-    NavBar
+    AppBar
   },
   data() {
     return {

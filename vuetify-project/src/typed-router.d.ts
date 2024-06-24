@@ -25,6 +25,7 @@ declare module 'vue-router/auto-routes' {
     '/CS/StatsView': RouteRecordInfo<'/CS/StatsView', '/CS/StatsView', Record<never, never>, Record<never, never>>,
     '/DOTA/AccountView': RouteRecordInfo<'/DOTA/AccountView', '/DOTA/AccountView', Record<never, never>, Record<never, never>>,
     '/DOTA/HeroesView': RouteRecordInfo<'/DOTA/HeroesView', '/DOTA/HeroesView', Record<never, never>, Record<never, never>>,
+    '/DOTA/HeroModal': RouteRecordInfo<'/DOTA/HeroModal', '/DOTA/HeroModal', Record<never, never>, Record<never, never>>,
     '/DOTA/MatchDetail': RouteRecordInfo<'/DOTA/MatchDetail', '/DOTA/MatchDetail', Record<never, never>, Record<never, never>>,
     '/DOTA/MatchesView': RouteRecordInfo<'/DOTA/MatchesView', '/DOTA/MatchesView', Record<never, never>, Record<never, never>>,
     '/DOTA/MyHeroesPage': RouteRecordInfo<'/DOTA/MyHeroesPage', '/DOTA/MyHeroesPage', Record<never, never>, Record<never, never>>,
@@ -41,6 +42,5 @@ declare module 'vue-router/auto-routes' {
     '/TFT/RankingView': RouteRecordInfo<'/TFT/RankingView', '/TFT/RankingView', Record<never, never>, Record<never, never>>,
     '/TFT/SearchView': RouteRecordInfo<'/TFT/SearchView', '/TFT/SearchView', Record<never, never>, Record<never, never>>,
     '/TFT/StatsView': RouteRecordInfo<'/TFT/StatsView', '/TFT/StatsView', Record<never, never>, Record<never, never>>,
-    '/ValorantView': RouteRecordInfo<'/ValorantView', '/ValorantView', Record<never, never>, Record<never, never>>,
   }
 }

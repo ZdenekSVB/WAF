@@ -16,7 +16,7 @@ describe('CSView Application Tests', () => {
       { title: 'TFT', path: '/tft/search' },
       { title: 'CS2', path: '/counter-strike' },
       { title: 'LOL', path: '/lol/search' },
-      { title: 'Valorant', path: '/valorant' },
+      { title: 'Dota', path: '/dota' },
     ];
 
     pages.forEach((page, index) => {
@@ -32,7 +32,7 @@ describe('CSView Application Tests', () => {
     cy.visit('/counter-strike');
     cy.get('input[label="Search player\'s profile"]').type(testNickname);
     cy.contains('Search').click();
-    
+
     // Mock the API response for profile
     cy.intercept('GET', `/api/getFaceitProfile/${testNickname}`, {
       fixture: 'profile.json',
@@ -48,7 +48,7 @@ describe('CSView Application Tests', () => {
     cy.visit('/counter-strike');
     cy.get('input[label="Search player\'s profile"]').type('testPlayer');
     cy.contains('Search').click();
-    
+
     cy.get('.v-progress-circular').should('be.visible');
     cy.wait(2000); // Adjust this to match your actual loading duration
     cy.get('.v-progress-circular').should('not.exist');
@@ -66,7 +66,7 @@ describe('CSView Application Tests', () => {
     // Search for a profile
     cy.get('input[label="Search player\'s profile"]').type('testPlayer');
     cy.contains('Search').click();
-    
+
     cy.wait(2000); // Wait for the search to complete
 
     cy.get('.v-tab').contains('Match history').click();

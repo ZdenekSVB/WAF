@@ -15,7 +15,7 @@
           <v-list-item-title>LOL</v-list-item-title>
         </v-list-item>
         <v-list-item @click="navigateTo(4)">
-          <v-list-item-title>Valorant</v-list-item-title>
+          <v-list-item-title>Dota</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -41,7 +41,7 @@
             <v-progress-circular indeterminate color="primary"></v-progress-circular>
           </v-col>
         </v-row>
-        
+
         <!-- Obsah se zobrazí, pouze pokud není načítání -->
         <v-row v-if="!isLoading" class="search-section" justify="center">
           <v-col cols="12" md="8">
@@ -131,14 +131,14 @@ export default defineComponent({
     async showMatchHistory() {
       if (this.profile) {
         try {
-          this.isLoading = true; 
+          this.isLoading = true;
           const matchHistory = await getFaceitMatchHistory(this.profile.player_id);
           this.matchHistory = matchHistory;
           console.log('Match history:', this.matchHistory);
         } catch (error) {
           console.error('Error fetching match history:', error);
         } finally {
-          this.isLoading = false; 
+          this.isLoading = false;
         }
       }
     },
@@ -146,7 +146,7 @@ export default defineComponent({
       this.isMenuOpen = !this.isMenuOpen;
     },
     navigateTo(index: number) {
-      const routes = ['/', '/tft/search', '/counter-strike', '/lol/search', '/valorant'];
+      const routes = ['/', '/tft/search', '/counter-strike', '/lol/search', '/dota'];
       this.$router.push(routes[index]);
     }
   }

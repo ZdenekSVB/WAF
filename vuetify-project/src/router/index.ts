@@ -33,8 +33,8 @@ const routes: Array<RouteRecordRaw> = [
   },
 //DOTA
   {
-    path: '/valorant',
-    name: 'valorant',
+    path: '/dota',
+    name: 'dota',
     component: DOTA,
   },
   {
@@ -67,7 +67,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/account-view/:accountId/rankings', name: 'RankingsView', component: DOTArankingsView },
   { path: '/account-view/:accountId/heroes', name: 'HeroesView', component: DOTAheroesView },
 
-  { path: '/account-view/:accountId/teams', name: 'Teams', component: DOTAteamsView },
+  { path: '/teams', name: 'Teams', component: DOTAteamsView },
 
 
 

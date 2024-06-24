@@ -1,7 +1,7 @@
 <template>
   <main>
-    <div class="game valorant" @mouseover="expandImage" @mouseout="shrinkImage" @click="navigateTo('valorant')">
-      <img src="@/assets/valorant.png" alt="Valorant">
+    <div class="game dota" @mouseover="expandImage" @mouseout="shrinkImage" @click="navigateTo('dota')">
+      <img src="@/assets/dotaBack.jpg" alt="Dota">
     </div>
     <div class="game counter-strike" @mouseover="expandImage" @mouseout="shrinkImage" @click="navigateTo('counter-strike')">
       <img src="@/assets/counter-strike.png" alt="Counter-Strike 2">
@@ -71,7 +71,7 @@ main {
   padding: 0;
 }
 
-.game.valorant img {
+.game.dota img {
   clip-path: polygon(0 0, 85% 0, 70% 100%, 0% 100%);
 }
 

@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <NavBar />
+    <AppBar :currentCategory="'DOTA'"/>
     <v-main>
       <v-container>
         <v-card class="matches-card" elevation="2">
@@ -31,7 +31,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import NavBar from '@/pages/DOTA/NavBar.vue';
+import AppBar from '@/components/AppBar.vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 
@@ -54,7 +54,7 @@ interface Match {
 export default defineComponent({
   name: 'TeamMatches',
   components: {
-    NavBar
+    AppBar
   },
   data() {
     return {

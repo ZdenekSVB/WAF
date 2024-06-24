@@ -35,20 +35,20 @@ export default defineComponent({
         TFT: ['Team Fight Tactics', 'Stats', 'Buffs/Nerfs', 'Ranking'],
         CS: ['CS'],
         LOL: ['LOL'],
-        DOTA: ['DOTA']
-      },      
+        DOTA: ['DOTA','HEROES', 'MY HEROES','TEAMS']
+      },
       menuRoutes: {
         TFT: ['/tft/search', '/tft/stats', '/tft/buffs-nerfs', '/tft/ranking'],
         CS: ['/counter-strike'],
         LOL: ['/lol/search'],
-        DOTA: ['/valorant']
+        DOTA: ['/dota','/heroes','my-heroes','/teams']
       },
-      drawerItems: ['Hlavní stránka', 'TFT', 'CSGO', 'LOL', 'Valorant']
+      drawerItems: ['Hlavní stránka', 'TFT', 'CSGO', 'LOL', 'Dota']
     };
   },
   methods: {
     navigateTo(index: number) {
-      const routes = ['/', '/tft/search', '/counter-strike', '/lol/search', '/valorant'];
+      const routes = ['/', '/tft/search', '/counter-strike', '/lol/search', '/dota'];
       this.$router.push(routes[index]);
     },
     changeActiveSite(index: number) {

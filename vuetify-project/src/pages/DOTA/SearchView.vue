@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <AppBar />
+    <AppBar :currentCategory="'DOTA'"/>
 
     <v-main>
       <div class="search-field">
@@ -27,28 +27,42 @@ import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'SearchView',
-  data() {
-    return {
-      searchQuery: ''
-    };
-  },
   setup() {
     const router = useRouter();
-    return { router };
-  },
-  methods: {
-    async searchForPlayer() {
-      if (this.searchQuery.trim() === '') {
+    const searchQuery = ref('');
+
+    const searchForPlayer = async () => {
+      if (searchQuery.value.trim() === '') {
         alert('Please enter an account ID.');
         return;
       }
 
-      const accountId = this.searchQuery.trim();
-      await this.router.push({ name: 'AccountView', params: { accountId } });
-    }
+      const accountId = searchQuery.value.trim();
+
+      try {
+        const API_URL = "https://api.opendota.com/api/players";
+        const response = await axios.get(`${API_URL}/${accountId}`);
+
+        // Check if player was found successfully
+        if (response.status === 200) {
+          await router.push({ name: 'AccountView', params: { accountId } });
+        } else {
+          alert('Player not found. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error searching for player:', error);
+        alert('Error searching for player. Please try again.');
+      }
+    };
+
+    return {
+      searchQuery,
+      searchForPlayer
+    };
   }
 });
 </script>
+
 
 <style scoped>
 .background {

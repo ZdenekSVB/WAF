@@ -1,9 +1,60 @@
 <template>
   <v-app>
-    <NavBar />
+    <AppBar :currentCategory="'DOTA'"/>
     <v-main>
       <v-container>
+        <!-- Loading Screen -->
+        <LoadingScreen v-if="loading" />
+
+        <!-- Search Bar Section -->
         <v-row>
+          <v-col cols="12">
+            <v-text-field
+              v-model="searchQuery"
+              label="Search Player"
+              @keyup.enter="searchPlayer"
+              dense
+              outlined
+              clearable
+              placeholder="Enter Steam ID or Personaname"
+            ></v-text-field>
+            <v-menu
+              v-model="menu"
+              :close-on-content-click="false"
+              :nudge-width="200"
+            >
+              <template v-slot:activator="{ on, attrs }">
+              </template>
+              <v-card>
+                <v-list>
+                  <v-list-item-group v-if="searchResults.length">
+                    <v-list-item
+                      v-for="result in searchResults.slice(0, 5)"
+                      :key="result.account_id"
+                      @click="goToAccount(result.account_id)"
+                    >
+                      <v-list-item-avatar>
+                        <v-img :src="result.avatarfull" alt="Avatar"></v-img>
+                      </v-list-item-avatar>
+                      <v-list-item-content>
+                        <v-list-item-title>{{ result.personaname }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ result.account_id }}</v-list-item-subtitle>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-list-item-group>
+                  <v-list-item v-else>
+                    <v-list-item-content>
+                      <v-list-item-title>No results</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-list>
+              </v-card>
+            </v-menu>
+          </v-col>
+        </v-row>
+
+        <!-- Player Profile and Stats Section -->
+        <v-row v-if="profile">
           <v-col cols="12" md="4">
             <v-card class="profile-card" elevation="2">
               <v-img :src="profile.avatarfull" alt="Profile Image" class="profile-image"></v-img>
@@ -64,7 +115,96 @@
                   :items="matches"
                   class="elevation-1"
                   @click:row="goToMatchDetail"
-                ></v-data-table>
+                >
+                  <template v-slot:item.hero_id="{ item }">
+                    <v-tooltip bottom>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-img
+                          v-bind="attrs"
+                          v-on="on"
+                          :src="getHeroImage(item.hero_id)"
+                          alt="Hero Image"
+                          class="hero-avatar"
+                        ></v-img>
+                      </template>
+                      <v-card>
+                        <v-img
+                          :src="getHeroImage(item.hero_id)"
+                          alt="Hero Image"
+                          class="tooltip-hero-image"
+                        ></v-img>
+                        <v-list dense>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Health</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_health') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Health Regen</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_health_regen') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Mana</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_mana') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Mana Regen</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_mana_regen') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Armor</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_armor') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Magic Resist</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_mr') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Attack Min</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_attack_min') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Attack Max</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_attack_max') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Strength</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_str') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Agility</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_agi') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Intelligence</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_int') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                        </v-list>
+                      </v-card>
+                    </v-tooltip>
+                  </template>
+                </v-data-table>
               </v-card-text>
             </v-card>
             <v-card class="heroes-card" elevation="2" v-if="heroes.length">
@@ -74,7 +214,96 @@
                   :headers="heroesHeaders"
                   :items="heroes"
                   class="elevation-1"
-                ></v-data-table>
+                >
+                  <template v-slot:item.hero_id="{ item }">
+                    <v-tooltip bottom>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-img
+                          v-bind="attrs"
+                          v-on="on"
+                          :src="getHeroImage(item.hero_id)"
+                          alt="Hero Image"
+                          class="hero-avatar"
+                        ></v-img>
+                      </template>
+                      <v-card>
+                        <v-img
+                          :src="getHeroImage(item.hero_id)"
+                          alt="Hero Image"
+                          class="tooltip-hero-image"
+                        ></v-img>
+                        <v-list dense>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Health</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_health') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Health Regen</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_health_regen') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Mana</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_mana') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Mana Regen</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_mana_regen') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Armor</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_armor') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Magic Resist</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_mr') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Attack Min</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_attack_min') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Attack Max</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_attack_max') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Strength</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_str') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Agility</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_agi') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>Base Intelligence</v-list-item-title>
+                              <v-list-item-subtitle>{{ getHeroAttribute(item.hero_id, 'base_int') }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                        </v-list>
+                      </v-card>
+                    </v-tooltip>
+                  </template>
+                </v-data-table>
               </v-card-text>
             </v-card>
           </v-col>
@@ -85,71 +314,112 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
-import NavBar from '@/pages/DOTA/NavBar.vue';
+import AppBar from '@/components/AppBar.vue';
+import LoadingScreen from '@/components/LoadingScreen.vue';
+import NavBar from "@/pages/DOTA/NavBar.vue";
 
 export default defineComponent({
   name: 'AccountView',
   components: {
     NavBar,
+    AppBar,
+    LoadingScreen,
   },
-  data() {
-    return {
-      profile: null,
-      stats: [],
-      matches: [],
-      heroes: [],
-      peers: [],
-      headers: [
-        { text: 'Statistic', align: 'start', sortable: false, value: 'stat' },
-        { text: 'Value', value: 'value' },
-      ],
-      matchesHeaders: [
-        { title: 'Match ID', value: 'match_id' },
-        { title: 'Hero ID', value: 'hero_id' },
-        { title: 'Kills', value: 'kills' },
-        { title: 'Deaths', value: 'deaths' },
-        { title: 'Assists', value: 'assists' },
-        { title: 'Duration', value: 'duration' },
-        { title: 'Result', value: 'result' },
-      ],
-      heroesHeaders: [
-        { title: 'Hero ID', value: 'hero_id' },
-        { title: 'Games Played', value: 'games' },
-        { title: 'Wins', value: 'win' },
-        { title: 'Win Rate', value: 'win_rate' },
-      ],
-      peersHeaders: [
-        { title: 'Peer Name', value: 'personaname' },
-        { title: 'Games Played', value: 'games' },
-        { title: 'Win Rate', value: 'win_rate' },
-        { title: 'Profile Pic', value: 'avatarfull' }
-      ],
+  setup() {
+    const route = useRoute();
+    const router = useRouter();
+    const accountId = ref(route.params.accountId);
+
+    const searchQuery = ref('');
+    const searchResults = ref([]);
+    const menu = ref(false);
+    const loading = ref(true);
+
+    const profile = ref(null);
+    const stats = ref([]);
+    const matches = ref([]);
+    const heroes = ref([]);
+    const peers = ref([]);
+    const heroData = ref([]);
+
+    const headers = [
+      { text: 'Statistic', align: 'start', sortable: false, value: 'stat' },
+      { text: 'Value', value: 'value' },
+    ];
+
+    const matchesHeaders = [
+      { title: 'Hero', value: 'hero_id' },
+      { title: 'Kills', value: 'kills' },
+      { title: 'Deaths', value: 'deaths' },
+      { title: 'Assists', value: 'assists' },
+      { title: 'Duration', value: 'duration' },
+      { title: 'Result', value: 'result' },
+    ];
+
+    const heroesHeaders = [
+      { title: 'Hero', value: 'hero_id' },
+      { title: 'Games Played', value: 'games' },
+      { title: 'Wins', value: 'win' },
+      { title: 'Win Rate', value: 'win_rate' },
+    ];
+
+    const peersHeaders = [
+      { title: 'Peer Name', value: 'personaname' },
+      { title: 'Games Played', value: 'games' },
+      { title: 'Win Rate', value: 'win_rate' },
+      { title: 'Profile Pic', value: 'avatarfull' }
+    ];
+
+    const searchPlayer = async () => {
+      try {
+        const response = await axios.get(`https://api.opendota.com/api/search?q=${searchQuery.value}`);
+        searchResults.value = response.data;
+        menu.value = true;
+      } catch (error) {
+        console.error('Error fetching search results:', error);
+      }
     };
-  },
-  async beforeRouteEnter(to, from, next) {
-    try {
-      const API_URL = "https://api.opendota.com/api/players";
-      const accountId = to.params.accountId;
-      const [playerRes, wlRes, matchesRes, heroesRes, peersRes] = await Promise.all([
-        axios.get(`${API_URL}/${accountId}`),
-        axios.get(`${API_URL}/${accountId}/wl`),
-        axios.get(`${API_URL}/${accountId}/matches`),
-        axios.get(`${API_URL}/${accountId}/heroes`),
-        axios.get(`${API_URL}/${accountId}/peers?limit=10`)
-      ]);
 
-      const playerData = playerRes.data;
-      const wlData = wlRes.data;
-      const matchesData = matchesRes.data;
-      const heroesData = heroesRes.data;
-      const peersData = peersRes.data;
+    const goToAccount = (accountId) => {
+      router.push({ name: 'AccountView', params: { accountId } }).then(() => {
+        location.reload();
+      });
+      menu.value = false;
+    };
 
-      next(vm => {
-        vm.profile = playerData.profile;
-        vm.stats = [
-          { stat: 'Name', value: playerData.profile.name },
+    const fetchHeroData = async () => {
+      try {
+        const response = await axios.get('https://api.opendota.com/api/heroStats');
+        heroData.value = response.data;
+      } catch (error) {
+        console.error('Error fetching hero data:', error);
+      }
+    };
+
+    const fetchPlayerData = async (accountId) => {
+      loading.value = true;
+      try {
+        const API_URL = "https://api.opendota.com/api/players";
+        const [playerRes, wlRes, matchesRes, heroesRes, peersRes] = await Promise.all([
+          axios.get(`${API_URL}/${accountId}`),
+          axios.get(`${API_URL}/${accountId}/wl`),
+          axios.get(`${API_URL}/${accountId}/matches`),
+          axios.get(`${API_URL}/${accountId}/heroes`),
+          axios.get(`${API_URL}/${accountId}/peers?limit=10`)
+        ]);
+
+        const playerData = playerRes.data;
+        const wlData = wlRes.data;
+        const matchesData = matchesRes.data;
+        const heroesData = heroesRes.data;
+        const peersData = peersRes.data;
+
+        profile.value = playerData.profile;
+        stats.value = [
+          { stat: 'Name', value: playerData.profile?.name },
           { stat: 'Competitive Rank', value: playerData.competitive_rank },
           { stat: 'Solo Competitive Rank', value: playerData.solo_competitive_rank },
           { stat: 'Rank Tier', value: playerData.rank_tier },
@@ -157,62 +427,91 @@ export default defineComponent({
           { stat: 'Wins', value: wlData.win },
           { stat: 'Losses', value: wlData.lose },
         ];
-        vm.matches = matchesData.map(match => ({
+        matches.value = matchesData.map(match => ({
           ...match,
           result: match.radiant_win ? 'Win' : 'Lose'
         }));
-        vm.heroes = heroesData.map(hero => ({
+        heroes.value = heroesData.map(hero => ({
           ...hero,
           win_rate: hero.games ? ((hero.win / hero.games) * 100).toFixed(2) + '%' : '0%'
         }));
-        vm.peers = peersData.map(peer => ({
+        peers.value = peersData.map(peer => ({
           ...peer,
           win_rate: peer.games ? ((peer.with_win / peer.with_games) * 100).toFixed(2) + '%' : '0%'
         }));
-      });
-    } catch (error) {
-      console.error('Error fetching player data:', error);
-      next(false); // cancel navigation on error
-    }
+      } catch (error) {
+        console.error('Error fetching player data:', error);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const getHeroImage = (heroId) => {
+      const hero = heroData.value.find(hero => hero.id === heroId);
+      return hero ? `https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/${hero.name.replace('npc_dota_hero_', '')}.png` : '';
+    };
+
+    const getHeroAttribute = (heroId, attribute) => {
+      const hero = heroData.value.find(hero => hero.id === heroId);
+      return hero ? hero[attribute] : '';
+    };
+
+    onMounted(() => {
+      fetchHeroData();
+      fetchPlayerData(accountId.value);
+    });
+
+    return {
+      accountId,
+      searchQuery,
+      searchResults,
+      menu,
+      profile,
+      stats,
+      matches,
+      heroes,
+      peers,
+      headers,
+      matchesHeaders,
+      heroesHeaders,
+      peersHeaders,
+      searchPlayer,
+      goToAccount,
+      loading,
+      heroData,
+      getHeroImage,
+      getHeroAttribute
+    };
   },
-  methods: {
-    goToMatchDetail(item) {
-      this.$router.push({ name: 'MatchDetail', params: { matchId: item.match_id } });
-    }
-  }
 });
 </script>
 
 <style scoped>
-/* Add scoped styles if necessary */
 .profile-card {
-  transition: transform 0.2s ease-in-out;
+  margin-bottom: 20px;
 }
-.profile-card:hover {
-  transform: scale(1.05);
+
+.profile-image {
+  width: 100%;
+  height: auto;
 }
-.stats-card, .matches-card, .heroes-card, .peers-card {
-  animation: fadeIn 1s ease-in-out;
-  margin-top: 20px;
+
+.peers-card,
+.stats-card,
+.matches-card,
+.heroes-card {
+  margin-bottom: 20px;
 }
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+
+.hero-avatar,
 .peer-avatar {
-  width: 50px; /* Adjust size as needed */
-  height: 50px; /* Adjust size as needed */
-  border-radius: 50%;
+  width: 50px;
+  height: 50px;
 }
-.v-data-table__row {
-  transition: background-color 0.3s ease;
-}
-.v-data-table__row:hover {
-  background-color: #f0f0f0;
-  cursor: pointer;
+
+.tooltip-hero-image {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 10px;
 }
 </style>
