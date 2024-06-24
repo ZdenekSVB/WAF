@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <AppBar :currentCategory="'TFT'" />
-    <v-main>        
+    <v-main>
       <v-container>
         <v-card>
           <v-card-title>Select Filters and Load Data</v-card-title>
@@ -30,21 +30,27 @@
                   ></v-select>
                 </v-col>
               </v-row>
-              <v-btn v-if="!loading" color="primary" @click="loadData">Load</v-btn>
-              <div v-if="loading">
-    <v-progress-circular indeterminate size="64"></v-progress-circular>
-  </div>
+              <v-row justify="center">
+                <v-btn v-if="!loading" color="primary" @click="loadData">Load</v-btn>
+                <div v-if="loading">
+                  <v-progress-circular indeterminate size="64"></v-progress-circular>
+                </div>
+              </v-row>
             </v-form>
-            <v-data-table
-              :headers="headers"
-              :items="players"
-              class="elevation-1"
-            >
-              <template v-slot:item.index="{ index }">
-                <span>{{ index + 1 }}</span>
-              </template>
-            </v-data-table>
+            </v-card-text>
+          </v-card>
 
+        <v-card>
+          <v-card-text>
+
+            <v-data-table
+              :headers="headers.text"
+              :items="indexedPlayers"
+              class="elevation-1"
+              :items-per-page="itemsPerPage"
+              :items-per-page-options="[5, 10, 15, 20]"
+            >
+            </v-data-table>
           </v-card-text>
         </v-card>
       </v-container>
@@ -60,14 +66,11 @@ export default {
   data() {
     return {
       selectedRegion: '',
-      loading: false,  // Add loading state
+      loading: false,
       selectedTier: '',
       selectedDivision: '',
-      regions: [    'eun1', 'euw1', 'br1', 'jp1', 'kr', 'la1', 'la2','na1', 'oc1', 'tr1', 'ru', 'ph2', 'sg2', 'th2','tw2', 'vn2'  ],
-      tiers: [
-        'IRON', 'BRONZE', 'SILVER', 'GOLD', 
-        'PLATINUM', 'DIAMOND'
-      ],
+      regions: ['eun1', 'euw1', 'br1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'],
+      tiers: ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND'],
       divisions: ['I', 'II', 'III', 'IV'],
       headers: [
         { text: '#', value: 'index' },
@@ -78,26 +81,41 @@ export default {
         { text: 'Wins', value: 'wins' },
         { text: 'Losses', value: 'losses' }
       ],
-      players: []
+      players: [],
+      itemsPerPage: 20,
+      pageNumber: 1
     };
+  },
+  computed: {
+    totalItems() {
+      return this.players.length;
+    },
+    indexedPlayers() {
+      return this.players.map((player, index) => ({
+        ...player,
+        index: this.itemIndex(index)
+      }));
+    }
   },
   methods: {
     async loadData() {
-      this.loading = true;
       const { selectedRegion, selectedTier, selectedDivision } = this;
       if (!selectedRegion || !selectedTier || !selectedDivision) {
         alert('Please select all filters.');
         return;
       }
+      this.loading = true;
       try {
         const response = await axios.get(`http://localhost:3003/api/leaderboard/${selectedRegion}/${selectedTier}/${selectedDivision}`);
         this.players = response.data;
       } catch (error) {
         console.error('Error loading data:', error);
-        this.loading = false;
-      }finally{
+      } finally {
         this.loading = false;
       }
+    },
+    itemIndex(index) {
+      return (this.pageNumber - 1) * this.itemsPerPage + index + 1;
     }
   }
 };

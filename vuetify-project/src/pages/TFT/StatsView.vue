@@ -155,19 +155,18 @@ export default defineComponent({
     const error = ref('');
 
     const searchForPlayer = async () => {
-      const [name, tag] = searchQuery.value.split('#');
-      loading.value = true;
+      const validTag = ['EUN1', 'EUW1', 'BR1', 'JP1', 'KR', 'LA1', 'LA2', 'NA1', 'OC1', 'TR1', 'RU', 'PH2', 'SG2', 'TH2', 'TW2', 'VN2'];
+      const trimmedQuery = searchQuery.value.trim();
+      const [name, tag] = trimmedQuery.split('#');
+
+      if (!name || !tag || !validTag.includes(tag)) {
+        alert('Please enter a valid search query in the format NAME#TAG');
+        return;
+      }
+
       error.value = '';
-
+      loading.value = true;
       try {
-        if (searchQuery.value.length < 1) {
-          alert('Empty Query');
-          return;
-        } else if (!searchQuery.value.includes('#')) {
-          alert('Missing # between Name and TagLine');
-          return;
-        }
-
         const response = await axios.get(`http://localhost:3003/api/summoner/${name}/${tag}`);
 
         userInfo.value.name = response.data.gameName;
@@ -193,7 +192,8 @@ export default defineComponent({
           }
         });
       } catch (error) {
-        error.value = 'Error fetching player data. Please check the summoner name and try again.';
+        alert('Summoner not found. Please enter a valid summoner name and tag.');
+        console.error('Error fetching player data:', error);
       } finally {
         loading.value = false;
         loadSummaryData();
