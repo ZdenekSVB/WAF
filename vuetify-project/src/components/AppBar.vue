@@ -34,13 +34,13 @@ export default defineComponent({
       menuItems: {
         TFT: ['Team Fight Tactics', 'Stats', 'Buffs/Nerfs', 'Ranking'],
         CS: ['CS'],
-        LOL: ['LOL'],
+        LOL: ['League of Legends','Champions'],
         DOTA: ['DOTA','HEROES', 'MY HEROES','TEAMS','ITEMS']
       },
       menuRoutes: {
         TFT: ['/tft/search', '/tft/stats', '/tft/buffs-nerfs', '/tft/ranking'],
         CS: ['/counter-strike'],
-        LOL: ['/lol/search'],
+        LOL: ['/lol/search','/lol/champions'],
         DOTA: ['/dota','/heroes','my-heroes','/teams','/items']
       },
       drawerItems: ['Hlavní stránka', 'TFT', 'CSGO', 'LOL', 'Dota']

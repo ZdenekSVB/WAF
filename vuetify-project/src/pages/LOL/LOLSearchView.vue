@@ -2,26 +2,36 @@
   <v-app>
     <AppBar :currentCategory="'LOL'"/>
     <v-main>
-      <v-img class="background" alt="Background" />
+      <v-img class="background" src="@/assets/lolbackground.png" alt="Background" />
       <div class="search-field">
-        <v-text-field
-          v-model="gameName"
-          label="Game Name"
-          outlined
-          class="mx-auto"
-          dense
-          hide-details
-        ></v-text-field>
-        <v-text-field
-          v-model="tagLine"
-          label="Tag Line"
-          outlined
-          class="mx-auto"
-          dense
-          hide-details
-          @keyup.enter="fetchPUUID"
-        ></v-text-field>
-        <v-btn @click="fetchPUUID" class="mx-auto">Search</v-btn>
+        <v-card class="pa-4">
+          <v-card-title class="text-center">Search Summoner</v-card-title>
+          <v-card-text>
+            <v-text-field
+              v-model="gameName"
+              label="Game Name"
+              outlined
+              class="mx-auto"
+              dense
+              hide-details
+            ></v-text-field>
+            <v-text-field
+              v-model="tagLine"
+              label="Tag Line"
+              outlined
+              class="mx-auto"
+              dense
+              hide-details
+              @keyup.enter="fetchPUUID"
+            ></v-text-field>
+          </v-card-text>
+          <v-card-actions class="justify-center">
+            <v-btn @click="fetchPUUID" color="primary" :disabled="loading">Search</v-btn>
+          </v-card-actions>
+          <v-card-text v-if="loading" class="text-center">
+            <v-progress-circular indeterminate color="primary"></v-progress-circular>
+          </v-card-text>
+        </v-card>
       </div>
     </v-main>
     <router-view />
@@ -43,6 +53,7 @@ export default defineComponent({
   setup() {
     const gameName = ref('');
     const tagLine = ref('');
+    const loading = ref(false);
     const router = useRouter();
     const lolStore = useLolStore();
 
@@ -51,6 +62,8 @@ export default defineComponent({
         alert('Please enter both Game Name and Tag Line');
         return;
       }
+
+      loading.value = true;
 
       try {
         const puuidResponse = await axios.get(`http://localhost:3002/api/getPUUID/${gameName.value}/${tagLine.value}`);
@@ -61,6 +74,8 @@ export default defineComponent({
       } catch (error) {
         console.error('Error fetching PUUID:', error);
         alert('Error fetching PUUID. Please try again.');
+      } finally {
+        loading.value = false;
       }
     };
 
@@ -104,6 +119,7 @@ export default defineComponent({
     return {
       gameName,
       tagLine,
+      loading,
       fetchPUUID
     };
   }
@@ -119,6 +135,8 @@ export default defineComponent({
   height: 100%;
   background-size: cover;
   background-position: center center;
+  filter: blur(5px);
+  z-index: 0;
 }
 
 .search-field {
@@ -127,8 +145,15 @@ export default defineComponent({
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 10;
-  width: 80%;
-  max-width: 400px;
+  width: 90%;
+  max-width: 500px;
+}
+
+.mx-auto {
+  margin: auto;
+}
+
+.text-center {
+  text-align: center;
 }
 </style>
-
