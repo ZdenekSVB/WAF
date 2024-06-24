@@ -23,7 +23,8 @@ import TFTRankingView from '../pages/TFT/RankingView.vue';
 //LOL
 import LOLSearchView from '../pages/LOL/LOLSearchView.vue';
 import LOLAccountView from '../pages/LOL/AccountView.vue'
-
+import LOLSpecificChampion from '../pages/LOL/SpecificChampionView.vue'
+import LOLChampions from '../pages/LOL/ChampionsView.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -87,6 +88,8 @@ const routes: Array<RouteRecordRaw> = [
 //LOL
   { path: '/lol/search', name: 'LOLSearch', component: LOLSearchView, },
   { path: '/lol/account', name: 'LOLAccount', component: LOLAccountView, props: { game: 'lol' } },
+  { path: '/lol/champions', name: 'LOLChampions', component: LOLChampions  },
+  { path: '/lol/champion/:championId', name: 'LOLSpecificChampion', component: LOLSpecificChampion, props: true  },
 ];
 
 const router = createRouter({
