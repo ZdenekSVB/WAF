@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <AppBar :currentCategory="'DOTA'"/>
+    <AppBar :currentCategory="'DOTA'" />
     <v-main>
       <v-container>
         <v-card class="favorites-card" elevation="2">
@@ -34,17 +34,27 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, computed } from 'vue';
 import AppBar from '@/components/AppBar.vue';
+import { useFavoriteHeroesStore } from '@/stores/favoriteHeroesStore';
 
 export default defineComponent({
   name: 'MyHeroes',
   components: {
-    AppBar
+    AppBar,
   },
-  data() {
+  setup() {
+    const favoriteHeroesStore = useFavoriteHeroesStore();
+
+    // Use a computed property to ensure reactivity
+    const favoriteHeroes = computed(() => favoriteHeroesStore.favoriteHeroes);
+
+    const removeFromFavorites = (hero) => {
+      favoriteHeroesStore.removeFromFavorites(hero);
+    };
+
     return {
-      favoriteHeroes: [],
+      favoriteHeroes,
       headers: [
         { title: 'Image', value: 'img', sortable: false },
         { title: 'Name', value: 'localized_name' },
@@ -57,25 +67,11 @@ export default defineComponent({
         { title: 'Base Attack', value: 'base_attack_min' },
         { title: 'Attack Range', value: 'attack_range' },
         { title: 'Move Speed', value: 'move_speed' },
-        { title: 'Action', value: 'action', sortable: false }
-      ]
+        { title: 'Action', value: 'action', sortable: false },
+      ],
+      removeFromFavorites,
     };
   },
-  methods: {
-    loadFavorites() {
-      this.favoriteHeroes = JSON.parse(localStorage.getItem('favoriteHeroes') || '[]');
-    },
-    removeFromFavorites(hero) {
-      let favorites = JSON.parse(localStorage.getItem('favoriteHeroes') || '[]');
-      favorites = favorites.filter(fav => fav.id !== hero.id);
-      localStorage.setItem('favoriteHeroes', JSON.stringify(favorites));
-      this.loadFavorites();
-      alert(`${hero.localized_name} has been removed from your favorites.`);
-    }
-  },
-  created() {
-    this.loadFavorites();
-  }
 });
 </script>
 
@@ -84,6 +80,7 @@ export default defineComponent({
   animation: fadeIn 1s ease-in-out;
   margin-top: 20px;
 }
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -92,9 +89,11 @@ export default defineComponent({
     opacity: 1;
   }
 }
+
 .v-data-table__row {
   transition: background-color 0.3s ease;
 }
+
 .v-data-table__row:hover {
   background-color: #f0f0f0;
   cursor: pointer;
