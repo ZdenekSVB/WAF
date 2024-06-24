@@ -19,6 +19,25 @@
                   <div><strong>Summoner Level:</strong> {{ userInfo.summonerLevel }}</div>
                 </div>
               </v-card-text>
+              <v-card v-for="(stat, index) in filteredStats" :key="index" class="mt-2">
+                <v-card-title>{{ getQueueTypeDisplayName(stat.queueType) }} Stats</v-card-title>
+                <v-card-text>
+                  <v-row>
+                    <v-col cols="4">
+                      <v-img :src="stat.tier ? rankIcon(stat.tier) : ''" aspect-ratio="1"></v-img>
+                    </v-col>
+                    <v-col cols="8">
+                      <div>
+                        <strong>Tier:</strong> {{ stat.tier }} {{ stat.rank }} <br>
+                        <strong>League Points:</strong> {{ stat.leaguePoints }} <br>
+                        <strong>Wins:</strong> {{ stat.wins }} <br>
+                        <strong>Losses:</strong> {{ stat.losses }} <br>
+                        <strong>Winrate:</strong> {{ stat.winrate.toFixed(2) }}% <br>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+              </v-card>
             </v-card>
           </v-col>
           <v-col cols="12" md="4">
@@ -38,29 +57,6 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="12" md="4" v-for="(stat, index) in filteredStats" :key="index">
-            <v-card>
-              <v-card-title>{{ getQueueTypeDisplayName(stat.queueType) }} Stats</v-card-title>
-              <v-card-text>
-                <v-row>
-                  <v-col cols="4">
-                    <v-img v-if="stat.tier" :src="rankIcon(stat.tier)" aspect-ratio="1"></v-img>
-                  </v-col>
-                  <v-col cols="8">
-                    <div>
-                      <strong>Tier:</strong> {{ stat.tier }} {{ stat.rank }} <br>
-                      <strong>League Points:</strong> {{ stat.leaguePoints }} <br>
-                      <strong>Wins:</strong> {{ stat.wins }} <br>
-                      <strong>Losses:</strong> {{ stat.losses }} <br>
-                      <strong>Winrate:</strong> {{ stat.winrate.toFixed(2) }}% <br>
-                    </div>
-                  </v-col>
-                </v-row>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-        <v-row>
           <v-col cols="12">
             <v-card>
               <v-card-title>Match History</v-card-title>
@@ -72,25 +68,47 @@
                 </v-row>
                 <v-row v-else v-for="(match, index) in userInfo.matchHistory" :key="index">
                   <v-col cols="12">
-                    <v-card :class="{'win-background': match.win, 'loss-background': !match.win}">
+                    <v-card :class="{'win-background': match.win, 'loss-background': !match.win}" @click="toggleExpand(match.matchId)">
                       <v-card-title>Match ID: {{ match.matchId }}</v-card-title>
                       <v-card-text>
-                        <div><strong>Date:</strong> {{ match.date }} <br>
-                          <strong>Champion:</strong> {{ match.champion }} <br>
-                          <strong>Role:</strong> {{ match.role }} <br>
-                          <strong>K/D/A:</strong> {{ match.kills }} / {{ match.deaths }} / {{ match.assists }} <br>
-                          <strong v-if="match.win">Result: Win</strong>
-                          <strong v-else>Result: Loss</strong>
+                        <div>
+                          <strong>Date:</strong> {{ match.date }} <br>
+                          <strong>Game Mode:</strong> {{ match.gameMode }} <br>
+                          <strong>Duration:</strong> {{ match.duration }} <br>
+                          <v-row v-if="expandedMatches[match.matchId]">
+                            <v-col cols="6">
+                              <v-card class="team-card">
+                                <v-card-title>Blue Team</v-card-title>
+                                <v-card-text>
+                                  <div v-for="participant in match.participants.filter(p => p.teamId === 100)" :key="participant.puuid">
+                                    <strong>{{ participant.summonerName }}:</strong> {{ participant.championName }}  <br>
+                                    <strong>KDA:</strong> {{ participant.kills }}/{{ participant.deaths }}/{{ participant.assists }}<br>
+                                    <strong v-if="participant.role === 'support'">Role:</strong> <span v-if="participant.role === 'support'">{{ participant.role }}</span><span v-else>{{ participant.lane }}</span> <br>
+                                    <br>
+                                  </div>
+                                </v-card-text>
+                              </v-card>
+                            </v-col>
+                            <v-col cols="6">
+                              <v-card class="team-card">
+                                <v-card-title>Red Team</v-card-title>
+                                <v-card-text>
+                                  <div v-for="participant in match.participants.filter(p => p.teamId === 200)" :key="participant.puuid">
+                                    <strong>{{ participant.summonerName }}:</strong> {{ participant.championName }}  <br>
+                                    <strong>KDA:</strong> {{ participant.kills }}/{{ participant.deaths }}/{{ participant.assists }}<br>
+                                    <strong v-if="participant.role === 'support'">Role:</strong> <span v-if="participant.role === 'support'">{{ participant.role }}</span><span v-else>{{ participant.lane }}</span> <br>
+                                    <br>
+                                  </div>
+                                </v-card-text>
+                              </v-card>
+                            </v-col>
+                          </v-row>
                         </div>
                       </v-card-text>
                     </v-card>
                   </v-col>
                 </v-row>
-                <v-row v-if="!loadingMatches">
-                  <v-col cols="12" class="text-center">
-                    <v-btn @click="loadMoreMatches" color="primary">Load More Matches</v-btn>
-                  </v-col>
-                </v-row>
+                <v-btn @click="loadMoreMatches" class="mx-auto">Load More Matches</v-btn>
               </v-card-text>
             </v-card>
           </v-col>
@@ -143,7 +161,8 @@ export default defineComponent({
 
     const searchQuery = ref('');
     const loadingMatches = ref(false);
-    const matchStartIndex = ref(20); // This will keep track of the starting index for the next batch of matches
+    const matchStart = ref(0);
+    const expandedMatches = ref<{ [key: string]: boolean }>({});
 
     const searchForPlayer = async () => {
       const [gameName, tagLine] = searchQuery.value.split('#');
@@ -154,9 +173,27 @@ export default defineComponent({
       loadingMatches.value = true;
       const userData = await fetchUserData(gameName, tagLine);
       if (userData) {
+        console.log(`Received nickname: ${userData.name}`);
+        console.log(`Received profileIconID: ${userData.profileIconId}`);
+        console.log(`Received profileIconURL: ${userData.profileIconURL}`);
+        console.log(`Received level: ${userData.summonerLevel}`);
         lolStore.setUserData(userData);
+        matchStart.value = 20; // Initial fetch of 20 matches
       }
       loadingMatches.value = false;
+    };
+
+    const loadMoreMatches = async () => {
+      if (!userInfo.value.puuid) return;
+      loadingMatches.value = true;
+      const moreMatches = await fetchMoreMatchHistory(userInfo.value.puuid, matchStart.value);
+      lolStore.addMatchHistory(moreMatches);
+      matchStart.value += 20; // Increment the start for the next batch of matches
+      loadingMatches.value = false;
+    };
+
+    const toggleExpand = (matchId: string) => {
+      expandedMatches.value[matchId] = !expandedMatches.value[matchId];
     };
 
     const getQueueTypeDisplayName = (queueType: string) => {
@@ -175,28 +212,21 @@ export default defineComponent({
     };
 
     const filteredStats = computed(() => {
-      return userInfo.value.stats.filter(stat => stat.queueType !== 'CHERRY');
+      return userInfo.value.stats?.filter(stat => stat.queueType !== 'CHERRY');
     });
-
-    const loadMoreMatches = async () => {
-      loadingMatches.value = true;
-      const moreMatches = await fetchMoreMatchHistory(userInfo.value.puuid, matchStartIndex.value);
-      if (moreMatches.length) {
-        lolStore.addMatchHistory(moreMatches);
-        matchStartIndex.value += 20; // Increment the start index for the next batch of matches
-      }
-      loadingMatches.value = false;
-    };
 
     return {
       userInfo,
       searchQuery,
       loadingMatches,
+      matchStart,
+      expandedMatches,
       searchForPlayer,
+      loadMoreMatches,
+      toggleExpand,
       getQueueTypeDisplayName,
       rankIcon,
-      filteredStats,
-      loadMoreMatches
+      filteredStats
     };
   }
 });
@@ -219,5 +249,8 @@ export default defineComponent({
 }
 .header-row {  
   font-weight: bold;
+}
+.team-card {
+  margin-bottom: 10px;
 }
 </style>

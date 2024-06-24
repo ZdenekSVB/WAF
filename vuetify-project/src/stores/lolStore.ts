@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { LolAccountData } from '@/types/index';
+import { LolAccountData, MatchDetails } from '@/types/index';
 
 export const useLolStore = defineStore('lolStore', {
   state: () => ({
@@ -10,9 +10,9 @@ export const useLolStore = defineStore('lolStore', {
       this.userData = data;
       this.userData.profileIconURL = `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/${this.userData.profileIconId}.jpg`;
     },
-    addMatchHistory(newMatches) {
+    addMatchHistory(matches: MatchDetails[]) {
       if (this.userData && this.userData.matchHistory) {
-        this.userData.matchHistory = [...this.userData.matchHistory, ...newMatches];
+        this.userData.matchHistory = [...this.userData.matchHistory, ...matches];
       }
     }
   },
