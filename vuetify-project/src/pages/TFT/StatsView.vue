@@ -8,7 +8,12 @@
           <v-col cols="12" md="4">
             <v-card class="text-center">
               <v-card-title>Profile Picture</v-card-title>
-              <v-img :src="profileIconUrl" aspect-ratio="1" v-if="profileIconUrl"></v-img>
+              <v-img
+                :src="profileIconUrl"
+                aspect-ratio="1"
+                v-if="profileIconUrl"
+                data-cy="profile-picture"
+              ></v-img>
               <v-card-text v-else>
                 No profile picture available
               </v-card-text>
@@ -20,11 +25,11 @@
             <!-- User Info Card -->
             <v-card class="text-center">
               <v-card-title>User Info</v-card-title>
-              <v-card-text>
+              <v-card-text data-cy="user-info">
                 <div v-if="userInfo.name">
-                  <div><strong>TagLine:</strong> {{ userInfo.tagLine }}</div>
-                  <div><strong>Summoner Name:</strong> {{ userInfo.name }}</div>
-                  <div><strong>Summoner Level:</strong> {{ userInfo.summonerLevel }}</div>
+                  <div data-cy="tagline"><strong>TagLine:</strong> {{ userInfo.tagLine }}</div>
+                  <div data-cy="summoner-name"><strong>Summoner Name:</strong> {{ userInfo.name }}</div>
+                  <div data-cy="summoner-level"><strong>Summoner Level:</strong> {{ userInfo.summonerLevel }}</div>
                 </div>
                 <div v-else>
                   No user information available
@@ -35,15 +40,15 @@
             <!-- League Info Card -->
             <v-card class="text-center">
               <v-card-title>League Info</v-card-title>
-              <v-card-text>
+              <v-card-text data-cy="league-info">
                 <div v-if="userInfo.leagueData.length">
                   <div v-for="(league, index) in userInfo.leagueData" :key="index">
-                    <div><strong>Queue Type:</strong> {{ league.queueType }}</div>
-                    <div><strong>Tier:</strong> {{ league.tier }}</div>
-                    <div><strong>Rank:</strong> {{ league.rank }}</div>
-                    <div><strong>League Points:</strong> {{ league.leaguePoints }}</div>
-                    <div><strong>Wins:</strong> {{ league.wins }}</div>
-                    <div><strong>Losses:</strong> {{ league.losses }}</div>
+                    <div data-cy="queue-type"><strong>Queue Type:</strong> {{ league.queueType }}</div>
+                    <div data-cy="tier"><strong>Tier:</strong> {{ league.tier }}</div>
+                    <div data-cy="rank"><strong>Rank:</strong> {{ league.rank }}</div>
+                    <div data-cy="league-points"><strong>League Points:</strong> {{ league.leaguePoints }}</div>
+                    <div data-cy="wins"><strong>Wins:</strong> {{ league.wins }}</div>
+                    <div data-cy="losses"><strong>Losses:</strong> {{ league.losses }}</div>
                     <hr />
                   </div>
                 </div>
@@ -67,8 +72,9 @@
                   dense
                   hide-details
                   @keyup.enter="searchForPlayer"
+                  data-cy="search-input"
                 ></v-text-field>
-                <div v-if="loading">
+                <div v-if="loading" data-cy="loading-indicator">
                   <v-progress-circular indeterminate size="64"></v-progress-circular>
                 </div>
               </v-card-text>
@@ -77,11 +83,11 @@
             <!-- Summary Card -->
             <v-card class="text-center">
               <v-card-title>Win/Loss Summary</v-card-title>
-              <v-card-text>
+              <v-card-text data-cy="summary">
                 <div v-if="loadSummary">
-                  <div><strong>Total Wins:</strong> {{ summaryData.wins }}</div>
-                  <div><strong>Total Losses:</strong> {{ summaryData.losses }}</div>
-                  <div><strong>Win Ratio:</strong> {{ winRatio }}%</div>
+                  <div data-cy="total-wins"><strong>Total Wins:</strong> {{ summaryData.wins }}</div>
+                  <div data-cy="total-losses"><strong>Total Losses:</strong> {{ summaryData.losses }}</div>
+                  <div data-cy="win-ratio"><strong>Win Ratio:</strong> {{ winRatio }}%</div>
                 </div>
                 <div v-else>
                   No summary data available
@@ -92,7 +98,7 @@
         </v-row>
 
         <!-- Recent Games Table -->
-        <v-row class="recent-games-table text-center">
+        <v-row class="recent-games-table text-center" data-cy="recent-games">
           <v-col cols="12">
             <v-card>
               <v-card-title>Recent Games</v-card-title>
@@ -155,19 +161,18 @@ export default defineComponent({
     const error = ref('');
 
     const searchForPlayer = async () => {
-      const [name, tag] = searchQuery.value.split('#');
-      loading.value = true;
+      const validTag = ['EUN1', 'EUW1', 'BR1', 'JP1', 'KR', 'LA1', 'LA2', 'NA1', 'OC1', 'TR1', 'RU', 'PH2', 'SG2', 'TH2', 'TW2', 'VN2'];
+      const trimmedQuery = searchQuery.value.trim();
+      const [name, tag] = trimmedQuery.split('#');
+
+      if (!name || !tag || !validTag.includes(tag)) {
+        alert('Please enter a valid search query in the format NAME#TAG');
+        return;
+      }
+
       error.value = '';
-
+      loading.value = true;
       try {
-        if (searchQuery.value.length < 1) {
-          alert('Empty Query');
-          return;
-        } else if (!searchQuery.value.includes('#')) {
-          alert('Missing # between Name and TagLine');
-          return;
-        }
-
         const response = await axios.get(`http://localhost:3003/api/summoner/${name}/${tag}`);
 
         userInfo.value.name = response.data.gameName;
@@ -193,7 +198,8 @@ export default defineComponent({
           }
         });
       } catch (error) {
-        error.value = 'Error fetching player data. Please check the summoner name and try again.';
+        alert('Summoner not found. Please enter a valid summoner name and tag.');
+        console.error('Error fetching player data:', error);
       } finally {
         loading.value = false;
         loadSummaryData();

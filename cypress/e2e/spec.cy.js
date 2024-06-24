@@ -16,7 +16,7 @@ describe('CSView Application Tests', () => {
       { title: 'TFT', path: '/tft/search' },
       { title: 'CS2', path: '/counter-strike' },
       { title: 'LOL', path: '/lol/search' },
-      { title: 'Valorant', path: '/valorant' },
+      { title: 'Dota', path: '/dota' },
     ];
 
     pages.forEach((page, index) => {

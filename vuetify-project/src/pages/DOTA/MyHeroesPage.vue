@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <NavBar />
+    <AppBar :currentCategory="'DOTA'"/>
     <v-main>
       <v-container>
         <v-card class="favorites-card" elevation="2">
@@ -35,12 +35,12 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import NavBar from '@/pages/DOTA/NavBar.vue';
+import AppBar from '@/components/AppBar.vue';
 
 export default defineComponent({
   name: 'MyHeroes',
   components: {
-    NavBar
+    AppBar
   },
   data() {
     return {
