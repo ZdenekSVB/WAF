@@ -26,6 +26,7 @@ declare module 'vue-router/auto-routes' {
     '/DOTA/AccountView': RouteRecordInfo<'/DOTA/AccountView', '/DOTA/AccountView', Record<never, never>, Record<never, never>>,
     '/DOTA/HeroesView': RouteRecordInfo<'/DOTA/HeroesView', '/DOTA/HeroesView', Record<never, never>, Record<never, never>>,
     '/DOTA/HeroModal': RouteRecordInfo<'/DOTA/HeroModal', '/DOTA/HeroModal', Record<never, never>, Record<never, never>>,
+    '/DOTA/Items': RouteRecordInfo<'/DOTA/Items', '/DOTA/Items', Record<never, never>, Record<never, never>>,
     '/DOTA/MatchDetail': RouteRecordInfo<'/DOTA/MatchDetail', '/DOTA/MatchDetail', Record<never, never>, Record<never, never>>,
     '/DOTA/MatchesView': RouteRecordInfo<'/DOTA/MatchesView', '/DOTA/MatchesView', Record<never, never>, Record<never, never>>,
     '/DOTA/MyHeroesPage': RouteRecordInfo<'/DOTA/MyHeroesPage', '/DOTA/MyHeroesPage', Record<never, never>, Record<never, never>>,

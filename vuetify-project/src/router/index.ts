@@ -12,6 +12,7 @@ import DOTAmatchDetailView from '../pages/DOTA/MatchDetail.vue';
 import DOTAteamsView from '../pages/DOTA/TeamsView.vue';
 import DOTAmyHeroes from '../pages/DOTA/MyHeroesPage.vue';
 import DOTAteamMatchesHistory from '../pages/DOTA/TeamMatchHistory.vue';
+import DOTAitemsView from '../pages/DOTA/Items.vue';
 
 //CSGO
 import Csgo from '../pages/CS/CSView.vue';
@@ -68,6 +69,8 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/account-view/:accountId/heroes', name: 'HeroesView', component: DOTAheroesView },
 
   { path: '/teams', name: 'Teams', component: DOTAteamsView },
+  { path: '/items', name: 'Items', component: DOTAitemsView },
+
 
 
 
