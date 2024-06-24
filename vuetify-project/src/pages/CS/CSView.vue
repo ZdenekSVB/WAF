@@ -1,20 +1,21 @@
 <template>
   <v-app class="app-background">
+    <div class="background-overlay"></div>
     <v-navigation-drawer v-model="isMenuOpen" app>
       <v-list>
-        <v-list-item @click="navigateTo(0)">
+        <v-list-item @click="navigateTo(0)" data-cy="nav-main-page">
           <v-list-item-title>Main Page</v-list-item-title>
         </v-list-item>
-        <v-list-item @click="navigateTo(1)">
+        <v-list-item @click="navigateTo(1)" data-cy="nav-tft">
           <v-list-item-title>TFT</v-list-item-title>
         </v-list-item>
-        <v-list-item @click="navigateTo(2)">
+        <v-list-item @click="navigateTo(2)" data-cy="nav-cs2">
           <v-list-item-title>CS2</v-list-item-title>
         </v-list-item>
-        <v-list-item @click="navigateTo(3)">
+        <v-list-item @click="navigateTo(3)" data-cy="nav-lol">
           <v-list-item-title>LOL</v-list-item-title>
         </v-list-item>
-        <v-list-item @click="navigateTo(4)">
+        <v-list-item @click="navigateTo(4)" data-cy="nav-dota">
           <v-list-item-title>Dota</v-list-item-title>
         </v-list-item>
       </v-list>
@@ -22,14 +23,14 @@
 
     <v-app-bar app>
       <v-toolbar-title>
-        <v-icon @click="toggleMenu">mdi-menu</v-icon>
-        <img src="@/assets/FACEITLogo.png" alt="FACEIT Logo" class="logo">
+        <v-icon @click="toggleMenu" data-cy="toggle-menu">mdi-menu</v-icon>
+        <img src="@/assets/FACEITLogo.png" alt="FACEIT Logo" class="logo" data-cy="logo">
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-tabs v-if="profile" v-model="view" centered>
-        <v-tab :key="'stats'" @click="setView('stats')">Stats</v-tab>
-        <v-tab :key="'matchHistory'" @click="setView('matchHistory')">Match history</v-tab>
-        <v-tab :key="'elo'" @click="setView('elo')">ELO</v-tab>
+        <v-tab :key="'stats'" @click="setView('stats')" data-cy="tab-stats">Stats</v-tab>
+        <v-tab :key="'matchHistory'" @click="setView('matchHistory')" data-cy="tab-match-history">Match history</v-tab>
+        <v-tab :key="'elo'" @click="setView('elo')" data-cy="tab-elo">ELO</v-tab>
       </v-tabs>
     </v-app-bar>
 
@@ -38,7 +39,7 @@
         <!-- Přidání načítací animace -->
         <v-row class="justify-center" v-if="isLoading">
           <v-col cols="12" md="8" class="d-flex justify-center">
-            <v-progress-circular indeterminate color="primary"></v-progress-circular>
+            <v-progress-circular indeterminate color="primary" data-cy="loading-spinner"></v-progress-circular>
           </v-col>
         </v-row>
 
@@ -47,27 +48,27 @@
           <v-col cols="12" md="8">
             <v-card>
               <v-card-title>
-                <v-text-field v-model="nickname" label="Search player's profile" outlined></v-text-field>
-                <v-btn @click="searchProfile" color="primary">Search</v-btn>
+                <v-text-field v-model="nickname" label="Search player's profile" outlined data-cy="input-search"></v-text-field>
+                <v-btn @click="searchProfile" color="primary" data-cy="btn-search">Search</v-btn>
               </v-card-title>
-              <v-alert v-if="errorMessage" type="error">{{ errorMessage }}</v-alert>
+              <v-alert v-if="errorMessage" type="error" data-cy="error-message">{{ errorMessage }}</v-alert>
             </v-card>
           </v-col>
         </v-row>
 
         <v-row v-if="profile && !isLoading" class="profile-section" justify="center">
           <v-col cols="12" md="8">
-            <v-card>
+            <v-card data-cy="profile-card">
               <v-card-title>
-                <v-img :src="profile.avatar" alt="Player Avatar" contain class="avatar-img"></v-img>
+                <v-img :src="profile.avatar" alt="Player Avatar" contain class="avatar-img" data-cy="player-avatar"></v-img>
                 <div>
-                  <h2>{{ profile.nickname }}</h2>
-                  <p v-if="profile.games && profile.games.cs2">ELO: <span>{{ profile.games.cs2.faceit_elo }}</span></p>
+                  <h2 data-cy="player-nickname">{{ profile.nickname }}</h2>
+                  <p v-if="profile.games && profile.games.cs2">ELO: <span data-cy="player-elo">{{ profile.games.cs2.faceit_elo }}</span></p>
                 </div>
               </v-card-title>
-              <StatsView v-if="view === 'stats'" :profile="profile" />
-              <MatchHistoryView v-if="view === 'matchHistory'" :profile="profile" :matchHistory="matchHistory" />
-              <EloView v-if="view === 'elo'" :profile="profile" />
+              <StatsView v-if="view === 'stats'" :profile="profile" data-cy="stats-view"/>
+              <MatchHistoryView v-if="view === 'matchHistory'" :profile="profile" :matchHistory="matchHistory" data-cy="match-history-view"/>
+              <EloView v-if="view === 'elo'" :profile="profile" data-cy="elo-view"/>
             </v-card>
           </v-col>
         </v-row>
@@ -75,7 +76,6 @@
     </v-main>
   </v-app>
 </template>
-
 
 <script lang="ts">
 import { defineComponent } from 'vue';
@@ -95,37 +95,29 @@ export default defineComponent({
       view: 'stats',
       isMenuOpen: false,
       errorMessage: '',
-      isLoading: false // Přidaný stav načítání
+      isLoading: false 
     };
   },
   methods: {
     setView(view: string) {
-      console.log('Setting view to:', view);
       this.view = view;
       if (view === 'matchHistory' && this.profile) {
         this.showMatchHistory();
-      }
-      if (view === 'elo' && this.profile) {
-        console.log('Switching to ELO view');
       }
     },
     async searchProfile() {
       try {
         this.errorMessage = '';
-        this.isLoading = true; // Nastavení načítání na true
-        this.profile = await getFaceitProfile(this.nickname);
-        console.log('Profile:', this.profile);
-        if (this.profile) {
-          const stats = await getFaceitStats(this.profile.player_id);
-          this.profile = { ...this.profile, ...stats };
-          console.log('Updated Profile with Stats:', this.profile);
-          this.view = 'stats';
+        this.isLoading = true; 
+        const profile = await getFaceitProfile(this.nickname);
+        if (profile) {
+          const stats = await getFaceitStats(profile.player_id);
+          this.profile = { ...profile, ...stats };
         }
       } catch (error) {
-        console.error('Error fetching profile or stats:', error);
         this.errorMessage = 'Player not found. Please check the nickname and try again.';
       } finally {
-        this.isLoading = false; // Nastavení načítání na false
+        this.isLoading = false; 
       }
     },
     async showMatchHistory() {
@@ -134,9 +126,6 @@ export default defineComponent({
           this.isLoading = true;
           const matchHistory = await getFaceitMatchHistory(this.profile.player_id);
           this.matchHistory = matchHistory;
-          console.log('Match history:', this.matchHistory);
-        } catch (error) {
-          console.error('Error fetching match history:', error);
         } finally {
           this.isLoading = false;
         }
@@ -153,8 +142,24 @@ export default defineComponent({
 });
 </script>
 
-
 <style scoped>
+.app-background {
+  position: relative;
+  overflow: hidden;
+}
+
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('@/assets/counter-strike.png') no-repeat center center fixed;
+  background-size: cover;
+  filter: blur(10px);
+  z-index: -1;
+}
+
 .logo {
   height: 50px;
   margin-left: 10px;

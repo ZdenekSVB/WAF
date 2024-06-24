@@ -1,52 +1,52 @@
 <template>
-    <div class="match-history">
-      <h3>Match history</h3>
-      <div v-for="match in matchHistory" :key="match.match_id" class="match-card">
-        <div class="map-container">
-          <img :src="`/src/assets/maps/${match.map}.png`" alt="Map Image" class="map-image">
-          <p>{{ match.map }}</p>
-        </div>
-        <div class="match-details">
-          <p class="result" :class="{'win': match.results === 'Win', 'loss': match.results === 'Loss'}">{{ match.results }}</p>
-          <p>K-A-D: {{ match.kills }}-{{ match.assists }}-{{ match.deaths }}</p>
-          <p>Rating: {{ match.rating }}</p>
-          <p>Date: {{ match.date }}</p>
-        </div>
+  <div class="match-history" data-cy="match-history">
+    <h3>Match history</h3>
+    <div v-for="match in matchHistory" :key="match.match_id" class="match-card" data-cy="match-card">
+      <div class="map-container" data-cy="map-container">
+        <img :src="`/src/assets/maps/${match.map}.png`" alt="Map Image" class="map-image" data-cy="map-image">
+        <p data-cy="map-name">{{ match.map }}</p>
+      </div>
+      <div class="match-details" data-cy="match-details">
+        <p class="result" :class="{'win': match.results === 'Win', 'loss': match.results === 'Loss'}" data-cy="match-result">{{ match.results }}</p>
+        <p data-cy="match-kad">K-A-D: {{ match.kills }}-{{ match.assists }}-{{ match.deaths }}</p>
+        <p data-cy="match-rating">Rating: {{ match.rating }}</p>
+        <p data-cy="match-date">Date: {{ match.date }}</p>
       </div>
     </div>
-  </template>
-  
-  <script lang="ts">
-  import { defineComponent, PropType } from 'vue';
-  
-  export default defineComponent({
-    name: 'MatchHistoryView',
-    props: {
-      profile: {
-        type: Object as PropType<Profile>,
-        required: true
-      },
-      matchHistory: {
-        type: Array as PropType<Match[]>,
-        required: true
-      }
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent, PropType } from 'vue';
+
+export default defineComponent({
+  name: 'MatchHistoryView',
+  props: {
+    profile: {
+      type: Object as PropType<Profile>,
+      required: true
     },
-    methods: {
-      logMapSrc(map: string) {
-        console.log('Map:', map);
-      }
-    },
-    watch: {
-      matchHistory(newMatchHistory) {
-        newMatchHistory.forEach(match => {
-          this.logMapSrc(match.map);
-        });
-      }
+    matchHistory: {
+      type: Array as PropType<Match[]>,
+      required: true
     }
-  });
-  </script>
-  
-  <style scoped>
+  },
+  methods: {
+    logMapSrc(map: string) {
+      console.log('Map:', map);
+    }
+  },
+  watch: {
+    matchHistory(newMatchHistory) {
+      newMatchHistory.forEach(match => {
+        this.logMapSrc(match.map);
+      });
+    }
+  }
+});
+</script>
+
+<style scoped>
 .match-history {
   margin-top: 20px;
   background: rgba(0, 0, 0, 0.8);
