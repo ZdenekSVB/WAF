@@ -2,6 +2,8 @@
 
 Tato webová aplikace je postavena na moderním stacku Vue 3 s využitím Vite pro rychlý vývoj a Vuetify pro UI komponenty.
 
+Projekt byl zaměřen na Frontendovou část a týmovou práci ve 4 lidech 
+
 ## 🛠 Použité technologie
 
 * Framework: Vue 3 (+ TypeScript)
