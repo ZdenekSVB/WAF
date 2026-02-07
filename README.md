@@ -18,8 +18,6 @@ Tato webová aplikace je postavena na moderním stacku Vue 3 s využitím Vite p
 Před spuštěním se ujisti, že máš nainstalováno:
 * Node.js (obsahuje npm)
 
-Důležité: Pokud máš ve složce soubor 'pnpm-lock.yaml', smaž ho, aby nedocházelo ke konfliktům s npm.
-
 ## 🚀 Instalace a spuštění (Jak zapnout)
 
 ### 1. Instalace závislostí
@@ -33,23 +31,6 @@ Pro spuštění aplikace na lokálním počítači použij:
 npm run dev
 
 Aplikace poběží na adrese: http://localhost:3000
-
-### 3. Build pro produkci
-Pokud chceš aplikaci sestavit pro nasazení na server (vytvoří složku "dist"):
-
-npm run build
-
-Tento příkaz zároveň provede kontrolu typů (TypeScript).
-
-### 4. Náhled produkčního buildu
-Pro vyzkoušení již sestavené aplikace lokálně:
-
-npm run preview
-
-### 5. Linter
-Pro kontrolu a opravu formátování kódu:
-
-npm run lint
 
 ## 🧪 Testování (Cypress)
 
