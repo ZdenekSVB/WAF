@@ -4,6 +4,8 @@ Tato webová aplikace je postavena na moderním stacku Vue 3 s využitím Vite p
 
 Projekt byl zaměřen na Frontendovou část a týmovou práci ve 4 lidech 
 
+Figma: https://www.figma.com/design/9R9qxw9Zm5YdTQmg4LOrJJ/WAF-project?node-id=13144-2&t=raI9ORe3rfra3E9x-1
+
 ## 🛠 Použité technologie
 
 * Framework: Vue 3 (+ TypeScript)
